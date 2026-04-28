@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Mail, Lock } from "lucide-react";
+import { Activity, Lock, User } from "lucide-react";
+import api from "@/services/api";
+import { login } from "@/services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -14,15 +16,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // ⚠️ depois vamos trocar pelo axios real
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // fake login por enquanto
-      localStorage.setItem("access_token", "fake_token");
-
+      await login(username, password);
       navigate("/");
     } catch (error) {
-      alert("Erro ao fazer login");
+      alert("Usuário ou senha inválidos");
     } finally {
       setLoading(false);
     }
@@ -46,23 +43,23 @@ export default function Login() {
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           
-          {/* Email */}
+          {/* Username */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">
-              Email
+              Usuário
             </label>
             <div className="relative">
-              <Mail
+              <User
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
-                type="email"
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                placeholder="seu@email.com"
+                placeholder="Nome de usuário"
               />
             </div>
           </div>
