@@ -11,3 +11,8 @@ export async function login(username: string, password: string) {
 
   return response.data;
 }
+
+export async function getCurrentUser() {
+  const response = await api.get("/api/auth/me/");
+  return response.data;
+}

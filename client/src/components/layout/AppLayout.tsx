@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
-  Activity,
-  Calendar,
-  Users,
-  Stethoscope,
-  Menu,
-  X,
-  LogOut,
-} from "lucide-react";
+import { Activity, Calendar, Users, Stethoscope, Menu, X, LogOut } from "lucide-react";
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -37,7 +29,7 @@ export default function AppLayout() {
       >
         <div className="p-6 border-b border-border flex items-center justify-between bg-primary text-white">
           {sidebarOpen && (
-            <h1 className="font-bold">GC</h1>
+            <h1 className="text-xl font-bold">Sistema de Gestão Clínica</h1>
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}

@@ -7,6 +7,7 @@ import Professionals from "@/pages/Professionals";
 import Patients from "@/pages/Patients";
 import Appointments from "@/pages/Appointments";
 import NotFound from "@/pages/NotFound";
+import Attendance from "@/pages/Attendance";
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
           <Route path="agendamentos" element={<Appointments />} />
           <Route path="pacientes" element={<Patients />} />
           <Route path="profissionais" element={<Professionals />} />
+          <Route path="/atendimento/:id" element={<Attendance />} />
         </Route>
       </Route>
 

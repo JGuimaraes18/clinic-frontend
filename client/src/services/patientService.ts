@@ -1,18 +1,21 @@
 import api from "./api";
-import { BaseModel } from "./base";
+import { Patient, PatientForm } from "@/types/patient";
 
-export interface Patient extends BaseModel {
-  full_name: string;
-  cpf: string;
-  cpf_hash: string;
-  document: string | null;
-  phone: string;
-  email: string;
-  birth_date: string;
-  clinic: number;
-}
 
 export async function getPatients(): Promise<Patient[]> {
   const response = await api.get("/api/patients/");
+  return response.data;
+}
+
+export async function createPatient(data: any): Promise<Patient> {
+  const response = await api.post("/api/patients/", data);
+  return response.data;
+}
+
+export async function updatePatient(
+  id: number,
+  data: PatientForm
+): Promise<Patient> {
+  const response = await api.put(`/api/patients/${id}/`, data);
   return response.data;
 }

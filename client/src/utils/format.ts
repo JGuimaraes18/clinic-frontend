@@ -32,9 +32,9 @@ export function formatPhone(phone: string) {
 export function formatDateBR(dateString: string) {
   if (!dateString) return "";
 
-  const date = new Date(dateString);
+  const [year, month, day] = dateString.split("-");
 
-  return date.toLocaleDateString("pt-BR");
+  return `${day}/${month}/${year}`;
 }
 
 export function calculateAge(dateString: string): number {
