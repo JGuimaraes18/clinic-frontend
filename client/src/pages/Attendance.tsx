@@ -56,6 +56,10 @@ export default function Attendance() {
     navigate("/agendamentos");
   }
 
+  async function handleBack() {
+    navigate("/agendamentos");
+  }
+
   if (!record) return <div className="p-6">Carregando...</div>;
 
   const isClosed = record.status === "FECHADO";
@@ -79,15 +83,23 @@ export default function Attendance() {
         {!isClosed && (
           <div className="flex gap-4">
             <button
+              onClick={handleBack}
+              class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full"
+            >
+              Voltar
+            </button>
+
+            <button
               onClick={handleSave}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+
             >
               Salvar Rascunho
             </button>
 
             <button
               onClick={handleClose}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+              class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
             >
               Finalizar Atendimento
             </button>
