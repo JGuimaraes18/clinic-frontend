@@ -68,3 +68,12 @@ export async function getMedicalHistory(id: number) {
   const response = await api.get(`/api/medical-records/${id}/historico/`);
   return response.data;
 }
+
+export async function getMedicalRecordByAppointment(
+  appointmentId: number
+) {
+  const response = await api.get(
+    `/api/medical-records/by-appointment/${appointmentId}/`
+  );
+  return response.data;
+}

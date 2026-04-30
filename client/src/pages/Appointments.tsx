@@ -7,9 +7,10 @@ import {
   createAppointment,
   updateAppointment,
   startAppointmentAttendance,
+  getAppointmentById,
 } from "@/services/appointmentsService";
 
-import { createMedicalRecord } from "@/services/medicalRecordService";
+import { createMedicalRecord, getMedicalRecordByAppointment } from "@/services/medicalRecordService";
 import { getPatients } from "@/services/patientService";
 import { getProfessionals } from "@/services/professionalService";
 
@@ -30,13 +31,30 @@ function getNowForInput() {
 function getStatusStyle(status: string) {
   switch (status) {
     case "AGENDADO":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-100 text-blue-700";      
     case "REALIZADO":
       return "bg-green-100 text-green-700";
     case "CANCELADO":
       return "bg-red-100 text-red-700";
+    case "EM_ATENDIMENTO":
+      return "bg-yellow-100 text-yellow-700";
     default:
       return "bg-gray-100 text-gray-700";
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case "AGENDADO":
+      return "Agendado";      
+    case "REALIZADO":
+      return "Realizado";
+    case "CANCELADO":
+      return "Cancelado";
+    case "EM_ATENDIMENTO":
+      return "Em Atendimento";
+    default:
+      return status;
   }
 }
 
@@ -176,6 +194,16 @@ export default function Appointments() {
     }
   }
 
+  async function handleAttendance(appointmentId: number) {
+    try {
+      const record = await getMedicalRecordByAppointment(appointmentId);
+      navigate(`/atendimento/${record.id}`);
+    } catch (err) {
+      console.error(err);
+      alert("Prontuário não encontrado.");
+    }
+  }
+
   // -----------------------------
   // UI
   // -----------------------------
@@ -216,7 +244,7 @@ export default function Appointments() {
                   a.status
                 )}`}
               >
-                {a.status}
+                {getStatusLabel(a.status)}
               </span>
             </div>
 
@@ -246,6 +274,19 @@ export default function Appointments() {
                 >
                   Cancelar
                 </button>
+              </div>
+            )}
+
+            {a.status === "EM_ATENDIMENTO" && (
+              <div className="mt-4 flex gap-2">
+                {canStart(a) && (
+                  <button
+                    onClick={() => handleAttendance(a.id)}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Continuar Atendimento
+                  </button>
+                )}
               </div>
             )}
           </div>
