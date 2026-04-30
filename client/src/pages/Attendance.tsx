@@ -13,6 +13,8 @@ export default function Attendance() {
 
   const [record, setRecord] = useState<any>(null);
   const [conteudo, setConteudo] = useState("");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
@@ -38,22 +40,25 @@ export default function Attendance() {
     });
 
     setRecord(updated);
-    alert("Salvo como rascunho.");
+    setAlertMessage("Salvo como rascunho.");
   }
 
   async function handleClose() {
     if (!record) return;
 
     if (!conteudo.trim()) {
-      alert("Não é possível fechar prontuário vazio.");
+      setAlertMessage("Não é possível fechar prontuário vazio.");
       return;
     }
 
     await updateMedicalRecord(record.id, { conteudo });
     await closeMedicalRecord(record.id);
 
-    alert("Atendimento finalizado!");
-    navigate("/agendamentos");
+    setSuccessMessage("Atendimento finalizado com sucesso!");    
+    
+    setTimeout(() => {
+      navigate("/agendamentos");
+    }, 1500);
   }
 
   async function handleBack() {
@@ -66,6 +71,21 @@ export default function Attendance() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto grid grid-cols-3 gap-6">
+      {successMessage && (
+        <div className="fixed top-6 right-6 z-50">
+          <div className="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg shadow-md text-sm">
+            {successMessage}
+          </div>
+        </div>
+      )}
+
+      {alertMessage && (
+        <div className="fixed top-6 right-6 z-50">
+          <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg shadow-md text-sm">
+            {alertMessage}
+          </div>
+        </div>
+      )}
 
       {/* COLUNA PRINCIPAL */}
       <div className="col-span-2 space-y-4">

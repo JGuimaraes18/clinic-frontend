@@ -77,6 +77,8 @@ export default function Appointments() {
   const [statusFilter, setStatusFilter] = useState<string>("TODOS");
   const [submitted, setSubmitted] = useState(false);
 
+  const [cancelId, setCancelId] = useState<number | null>(null);
+
   const navigate = useNavigate();
 
   // AUTH GLOBAL CORRETO
@@ -190,22 +192,29 @@ export default function Appointments() {
   // -----------------------------
   // CANCEL (FIXED PATCH ISSUE)
   // -----------------------------
-  async function handleCancel(id: number) {
-    if (!confirm("Deseja cancelar este agendamento?")) return;
 
-    const appointment = appointments.find((a) => a.id === id);
+  async function handleCancel(id: number) {
+    setCancelId(id);
+  }
+
+  async function confirmCancel() {
+    if (!cancelId) return;
+
+    const appointment = appointments.find((a) => a.id === cancelId);
     if (!appointment) return;
 
-    const updated = await updateAppointment(id, {
+    const updated = await updateAppointment(cancelId, {
       ...appointment,
       status: "CANCELADO",
     });
 
     setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? updated : a))
+      prev.map((a) => (a.id === cancelId ? updated : a))
     );
-  }
 
+    setCancelId(null);
+  }
+  
   // -----------------------------
   // START APPOINTMENT
   // -----------------------------
@@ -217,7 +226,6 @@ export default function Appointments() {
       navigate(`/atendimento/${res.prontuario_id}`);
     } catch (err) {
       console.error(err);
-      alert("Erro ao iniciar atendimento.");
     }
   }
 
@@ -227,7 +235,6 @@ export default function Appointments() {
       navigate(`/atendimento/${record.id}`);
     } catch (err) {
       console.error(err);
-      alert("Prontuário não encontrado.");
     }
   }
 
@@ -350,6 +357,35 @@ export default function Appointments() {
             </div>
           ))}
         </div>
+        {cancelId && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/30">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-80">
+              <h3 className="text-lg font-semibold mb-2">
+                Cancelar agendamento
+              </h3>
+
+              <p className="text-sm text-gray-600 mb-6">
+                Deseja realmente cancelar este agendamento?
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setCancelId(null)}
+                  className="px-4 py-2 text-sm rounded-lg border"
+                >
+                  Voltar
+                </button>
+
+                <button
+                  onClick={confirmCancel}
+                  className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
   
