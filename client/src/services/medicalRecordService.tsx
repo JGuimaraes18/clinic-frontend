@@ -63,3 +63,8 @@ export async function closeMedicalRecord(id: number) {
   );
   return response.data;
 }
+
+export async function getMedicalHistory(id: number) {
+  const response = await api.get(`/api/medical-records/${id}/historico/`);
+  return response.data;
+}
