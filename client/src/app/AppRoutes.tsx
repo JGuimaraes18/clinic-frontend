@@ -8,6 +8,7 @@ import Patients from "@/pages/Patients";
 import Appointments from "@/pages/Appointments";
 import NotFound from "@/pages/NotFound";
 import Attendance from "@/pages/Attendance";
+import AppointmentsCalendar from "@/pages/Appointments-calendar";
 
 export default function AppRoutes() {
   return (
@@ -18,6 +19,7 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path="agendamentos" element={<Appointments />} />
+          <Route path="calendar" element={<AppointmentsCalendar />} />
           <Route path="pacientes" element={<Patients />} />
           <Route path="profissionais" element={<Professionals />} />
           <Route path="/atendimento/:id" element={<Attendance />} />

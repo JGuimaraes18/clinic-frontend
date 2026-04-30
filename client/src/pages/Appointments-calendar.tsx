@@ -60,7 +60,7 @@ function getStatusLabel(status: string) {
   }
 }
 
-export default function Appointments() {
+export default function AppointmentsCalendar() {
   const { data, loading, error } =
     useFetch<Appointment[]>(getAppointments);
 
@@ -372,7 +372,70 @@ export default function Appointments() {
           </select>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          {generateHours().map((hour) => {
+            const hourAppointments = appointmentsOfDay.filter((a) => {
+              const d = new Date(a.data_hora);
+              const appointmentHour = d
+                .getHours()
+                .toString()
+                .padStart(2, "0") + ":00";
+              return appointmentHour === hour;
+            });
+
+            return (
+              <div
+                key={hour}
+                className="flex border-b last:border-b-0 min-h-[80px]"
+              >
+                {/* Coluna horário */}
+                <div className="w-24 bg-gray-50 text-sm text-gray-500 flex items-start justify-center pt-3 border-r">
+                  {hour}
+                </div>
+
+                {/* Coluna compromissos */}
+                <div className="flex-1 p-3 space-y-2">
+                  {hourAppointments.length === 0 && (
+                    <div className="text-xs text-gray-300">
+                      —
+                    </div>
+                  )}
+
+                  {hourAppointments.map((a) => (
+                    <div
+                      key={a.id}
+                      className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-sm shadow-sm"
+                    >
+                      <div className="font-semibold">
+                        {a.paciente_nome}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Prof: {a.profissional_nome}
+                      </div>
+
+                      {a.status === "EM_ATENDIMENTO" && (
+                        <div className="mt-1 text-xs text-yellow-600 font-medium">
+                          Em atendimento
+                        </div>
+                      )}
+
+                      {a.status === "AGENDADO" && (
+                        <button
+                          onClick={() => handleStart(a.id)}
+                          className="mt-2 bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Iniciar
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {loading && <div>Carregando...</div>}
         {error && <div className="text-red-500">{error}</div>}
 
@@ -442,7 +505,7 @@ export default function Appointments() {
               )}
             </div>
           ))}
-        </div>
+        </div> */}
         {cancelId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/30">
             <div className="bg-white rounded-xl shadow-lg p-6 w-80">
