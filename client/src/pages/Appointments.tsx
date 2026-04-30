@@ -10,6 +10,8 @@ import {
   getAppointmentById,
 } from "@/services/appointmentsService";
 
+import Modal from "@/components/modal/Modal";
+
 import { createMedicalRecord, getMedicalRecordByAppointment } from "@/services/medicalRecordService";
 import { getPatients } from "@/services/patientService";
 import { getProfessionals } from "@/services/professionalService";
@@ -62,8 +64,11 @@ export default function Appointments() {
   const { data, loading, error } =
     useFetch<Appointment[]>(getAppointments);
 
-  const { data: patients = [] } = useFetch(getPatients);
-  const { data: professionals = [] } = useFetch(getProfessionals);
+  const { data: patientsData } = useFetch(getPatients);
+  const { data: professionalsData } = useFetch(getProfessionals);
+
+  const patients = patientsData ?? [];
+  const professionals = professionalsData ?? [];
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [openModal, setOpenModal] = useState(false);
@@ -225,186 +230,187 @@ export default function Appointments() {
   // UI
   // -----------------------------
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Agendamentos</h1>
-          <p className="text-sm text-gray-500">
-            Lista de agendamentos cadastrados
-          </p>
-        </div>
+    <>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Agendamentos</h1>
+            <p className="text-sm text-gray-500">
+              Lista de agendamentos cadastrados
+            </p>
+          </div>
 
-        <button
-          onClick={openNewModal}
-          className="bg-blue-600 text-white px-4 py-1 rounded-lg"
-        >
-          + Novo
-        </button>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {[
-          { value: "TODOS", label: "Todos" },
-          { value: "AGENDADO", label: "Agendado" },
-          { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
-          { value: "REALIZADO", label: "Realizado" },
-          { value: "CANCELADO", label: "Cancelado" },
-        ].map((item) => (
           <button
-            key={item.value}
-            onClick={() => setStatusFilter(item.value)}
-            className={`px-3 py-1 rounded-full text-sm transition mb-4
-              ${
-                statusFilter === item.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+            onClick={openNewModal}
+            className="bg-blue-600 text-white px-4 py-1 rounded-lg"
           >
-            {item.label}
+            + Novo
           </button>
-        ))}
-      </div>
+        </div>
 
-      {loading && <div>Carregando...</div>}
-      {error && <div className="text-red-500">{error}</div>}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: "TODOS", label: "Todos" },
+            { value: "AGENDADO", label: "Agendado" },
+            { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
+            { value: "REALIZADO", label: "Realizado" },
+            { value: "CANCELADO", label: "Cancelado" },
+          ].map((item) => (
+            <button
+              key={item.value}
+              onClick={() => setStatusFilter(item.value)}
+              className={`px-3 py-1 rounded-full text-sm transition mb-4
+                ${
+                  statusFilter === item.value
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {filteredAppointments.map((a) => (
-          <div
-            key={a.id}
-            className="bg-white border rounded-xl p-5 shadow-sm"
-          >
-            <div className="flex justify-between">
-              <h4 className="font-semibold">
-                {formatDate(a.data_hora)}
-              </h4>
+        {loading && <div>Carregando...</div>}
+        {error && <div className="text-red-500">{error}</div>}
 
-              <span
-                className={`px-3 py-1 text-xs items-stretch rounded-full ${getStatusStyle(
-                  a.status
-                )}`}
-              >
-                {getStatusLabel(a.status)}
-              </span>
-            </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {filteredAppointments.map((a) => (
+            <div
+              key={a.id}
+              className="bg-white border rounded-xl p-5 shadow-sm"
+            >
+              <div className="flex justify-between">
+                <h4 className="font-semibold">
+                  {formatDate(a.data_hora)}
+                </h4>
 
-            <div className="mt-4 text-sm">
-              <p>
-                <strong>Paciente:</strong> {a.paciente_nome}
-              </p>
-              <p>
-                <strong>Profissional:</strong> {a.profissional_nome}
-              </p>
-            </div>
-
-            {a.status === "AGENDADO" && (
-              <div className="mt-4 flex gap-2">
-                {canStart(a) && (
-                  <button
-                    onClick={() => handleStart(a.id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Iniciar Atendimento
-                  </button>
-                )}
-
-                <button
-                  onClick={() => handleCancel(a.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                <span
+                  className={`px-3 py-1 text-xs items-stretch rounded-full ${getStatusStyle(
+                    a.status
+                  )}`}
                 >
-                  Cancelar
-                </button>
+                  {getStatusLabel(a.status)}
+                </span>
               </div>
-            )}
 
-            {a.status === "EM_ATENDIMENTO" && (
-              <div className="mt-4 flex gap-2">
-                {canStart(a) && (
-                  <button
-                    onClick={() => handleAttendance(a.id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Continuar Atendimento
-                  </button>
-                )}
+              <div className="mt-4 text-sm">
+                <p>
+                  <strong>Paciente:</strong> {a.paciente_nome}
+                </p>
+                <p>
+                  <strong>Profissional:</strong> {a.profissional_nome}
+                </p>
               </div>
-            )}
-          </div>
-        ))}
+
+              {a.status === "AGENDADO" && (
+                <div className="mt-4 flex gap-2">
+                  {canStart(a) && (
+                    <button
+                      onClick={() => handleStart(a.id)}
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Iniciar Atendimento
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleCancel(a.id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+
+              {a.status === "EM_ATENDIMENTO" && (
+                <div className="mt-4 flex gap-2">
+                  {canStart(a) && (
+                    <button
+                      onClick={() => handleAttendance(a.id)}
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Continuar Atendimento
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
+  
       {/* MODAL */}
-      {openModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md space-y-4">
-            <h3 className="font-semibold">
-              {editing ? "Editar Agendamento" : "Novo Agendamento"}
-            </h3>
+      <Modal
+        isOpen={openModal}
+        onClose={handleClose}
+        title={editing ? "Editar Agendamento" : "Novo Agendamento"}
+      >
+        <div className="space-y-3">
+          <input
+            type="datetime-local"
+            min={getNowForInput()}
+            value={form.data_hora}
+            onChange={(e) =>
+              setForm({ ...form, data_hora: e.target.value })
+            }
+            className="w-full border rounded p-2"
+          />
 
-            <input
-              type="datetime-local"
-              min={getNowForInput()}
-              value={form.data_hora}
-              onChange={(e) =>
-                setForm({ ...form, data_hora: e.target.value })
-              }
-              className="w-full border rounded p-2"
-            />
+          <select
+            value={form.paciente}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                paciente: Number(e.target.value),
+              })
+            }
+            className="w-full border rounded p-2"
+          >
+            <option value="">Selecione o paciente</option>
+            {patients.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </select>
 
-            <select
-              value={form.paciente}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  paciente: Number(e.target.value),
-                })
-              }
-              className="w-full border rounded p-2"
+          <select
+            value={form.profissional}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                profissional: Number(e.target.value),
+              })
+            }
+            className="w-full border rounded p-2"
+          >
+            <option value="">Selecione o profissional</option>
+            {professionals.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </select>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleClose}
+              className="border px-4 py-1 rounded-lg"
             >
-              <option value="">Selecione o paciente</option>
-              {patients.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name}
-                </option>
-              ))}
-            </select>
+              Cancelar
+            </button>
 
-            <select
-              value={form.profissional}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  profissional: Number(e.target.value),
-                })
-              }
-              className="w-full border rounded p-2"
+            <button
+              onClick={handleSave}
+              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
             >
-              <option value="">Selecione o profissional</option>
-              {professionals.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={handleClose}
-                className="border px-4 py-1 rounded-lg"
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={handleSave}
-                className="bg-blue-600 text-white px-4 py-1 rounded-lg"
-              >
-                Salvar
-              </button>
-            </div>
+              Salvar
+            </button>
           </div>
         </div>
-      )}
-    </div>
+      </Modal>
+    </>
   );
 }
