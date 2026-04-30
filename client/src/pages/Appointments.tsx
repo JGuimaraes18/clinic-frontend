@@ -12,7 +12,7 @@ import {
 
 import Modal from "@/components/modal/Modal";
 
-import { createMedicalRecord, getMedicalRecordByAppointment } from "@/services/medicalRecordService";
+import { getMedicalRecordByAppointment } from "@/services/medicalRecordService";
 import { getPatients } from "@/services/patientService";
 import { getProfessionals } from "@/services/professionalService";
 
@@ -75,6 +75,7 @@ export default function Appointments() {
   const [editing, setEditing] = useState<Appointment | null>(null);
 
   const [statusFilter, setStatusFilter] = useState<string>("TODOS");
+  const [submitted, setSubmitted] = useState(false);
 
   const navigate = useNavigate();
 
@@ -126,6 +127,7 @@ export default function Appointments() {
   // -----------------------------
   function openNewModal() {
     setEditing(null);
+    setSubmitted(false);
     setForm({
       data_hora: "",
       status: "AGENDADO",
@@ -137,9 +139,10 @@ export default function Appointments() {
   }
 
   function openEditModal(appointment: Appointment) {
-    if (appointment.status === "REALIZADO") return;
+    if (appointment.status !== "AGENDADO") return;
 
     setEditing(appointment);
+    setSubmitted(false);
     setForm({
       data_hora: appointment.data_hora.slice(0, 16),
       status: appointment.status,
@@ -159,12 +162,13 @@ export default function Appointments() {
   // SAVE
   // -----------------------------
   async function handleSave() {
-    try {
-      if (!form.data_hora || !form.paciente || !form.profissional) {
-        alert("Preencha todos os campos obrigatórios.");
-        return;
-      }
+    setSubmitted(true);
 
+    if (!form.data_hora || !form.paciente || !form.profissional) {
+      return;
+    }
+
+    try {
       if (editing) {
         const updated = await updateAppointment(editing.id, form);
 
@@ -176,6 +180,7 @@ export default function Appointments() {
         setAppointments((prev) => [...prev, newAppointment]);
       }
 
+      setSubmitted(false);
       handleClose();
     } catch (err) {
       console.error(err);
@@ -315,6 +320,13 @@ export default function Appointments() {
                   )}
 
                   <button
+                    onClick={() => openEditModal(a)}
+                    className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
+                  >
+                    Editar
+                  </button>
+
+                  <button
                     onClick={() => handleCancel(a.id)}
                     className="bg-red-500 text-white px-3 py-1 rounded text-sm"
                   >
@@ -355,7 +367,9 @@ export default function Appointments() {
             onChange={(e) =>
               setForm({ ...form, data_hora: e.target.value })
             }
-            className="w-full border rounded p-2"
+            className={`w-full rounded p-2 border ${
+              submitted && !form.data_hora ? "border-red-500" : "border-gray-300"
+            }`}
           />
 
           <select
@@ -366,7 +380,9 @@ export default function Appointments() {
                 paciente: Number(e.target.value),
               })
             }
-            className="w-full border rounded p-2"
+            className={`w-full rounded p-2 border ${
+              submitted && !form.paciente ? "border-red-500" : "border-gray-300"
+            }`}
           >
             <option value="">Selecione o paciente</option>
             {patients.map((p: any) => (
@@ -384,7 +400,9 @@ export default function Appointments() {
                 profissional: Number(e.target.value),
               })
             }
-            className="w-full border rounded p-2"
+            className={`w-full rounded p-2 border ${
+              submitted && !form.profissional ? "border-red-500" : "border-gray-300"
+            }`}
           >
             <option value="">Selecione o profissional</option>
             {professionals.map((p: any) => (
