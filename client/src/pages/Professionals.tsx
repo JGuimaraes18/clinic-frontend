@@ -17,6 +17,7 @@ export default function Professionals() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<ProfessionalForm>({
     full_name: "",
@@ -90,10 +91,14 @@ export default function Professionals() {
         setProfessionals((prev) =>
           prev.map((p) => (p.id === editingId ? updated : p))
         );
+
+        setSuccessMessage("Profissional atualizado com sucesso!");
       } else {
         const created = await createProfessional(form);
 
         setProfessionals((prev) => [...prev, created]);
+        setSuccessMessage("Profissional criado com sucesso!");
+
       }
 
       handleClose();
@@ -122,6 +127,13 @@ export default function Professionals() {
   return (
     <>
       <div className="p-6">
+        {successMessage && (
+          <div className="fixed top-6 right-6 z-50">
+            <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
+              {successMessage}
+            </div>
+          </div>
+        )}
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>

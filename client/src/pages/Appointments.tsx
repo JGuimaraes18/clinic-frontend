@@ -74,9 +74,16 @@ export default function Appointments() {
   const [openModal, setOpenModal] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<string>("TODOS");
-  const [submitted, setSubmitted] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("AGENDADO");
+  const [dateFilter, setDateFilter] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
+  const [patientFilter, setPatientFilter] = useState<string>("TODOS");
+  const [professionalFilter, setProfessionalFilter] = useState<string>("TODOS");
+  const [submitted, setSubmitted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<number | null>(null);
 
   const navigate = useNavigate();
@@ -158,6 +165,7 @@ export default function Appointments() {
   function handleClose() {
     setOpenModal(false);
     setEditing(null);
+    
   }
 
   // -----------------------------
@@ -177,10 +185,19 @@ export default function Appointments() {
         setAppointments((prev) =>
           prev.map((a) => (a.id === editing.id ? updated : a))
         );
+
+        setSuccessMessage("Agendamento atualizado com sucesso!");
       } else {
         const newAppointment = await createAppointment(form);
+
         setAppointments((prev) => [...prev, newAppointment]);
+
+        setSuccessMessage("Agendamento criado com sucesso!");
       }
+
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 2000);
 
       setSubmitted(false);
       handleClose();
@@ -244,6 +261,14 @@ export default function Appointments() {
   return (
     <>
       <div className="p-6">
+        {successMessage && (
+          <div className="fixed top-6 right-6 z-50">
+            <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
+              {successMessage}
+            </div>
+          </div>
+        )}
+        
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold">
@@ -264,11 +289,11 @@ export default function Appointments() {
 
         <div className="flex flex-wrap gap-2">
           {[
-            { value: "TODOS", label: "Todos" },
             { value: "AGENDADO", label: "Agendado" },
             { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
             { value: "REALIZADO", label: "Realizado" },
             { value: "CANCELADO", label: "Cancelado" },
+            { value: "TODOS", label: "Todos" },
           ].map((item) => (
             <button
               key={item.value}

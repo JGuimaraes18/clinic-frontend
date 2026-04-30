@@ -10,6 +10,7 @@ export default function Patients() {
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<PatientForm>({
     full_name: "",
@@ -72,10 +73,13 @@ export default function Patients() {
         setPatients((prev) =>
           prev.map((p) => (p.id === editingId ? updated : p))
         );
+
+        setSuccessMessage("Paciente atualizado com sucesso!");
       } else {
         const newPatient = await createPatient(form);
 
         setPatients((prev) => [...prev, newPatient]);
+        setSuccessMessage("Paciente criado com sucesso!");
       }
 
       handleClose();
@@ -101,6 +105,14 @@ export default function Patients() {
   return (
     <>
       <div className="p-6">
+        {successMessage && (
+          <div className="fixed top-6 right-6 z-50">
+            <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
+              {successMessage}
+            </div>
+          </div>
+        )}
+        
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
