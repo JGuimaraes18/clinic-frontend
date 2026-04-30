@@ -1,5 +1,5 @@
 import api from "./api";
-import { Appointment, AppointmentForm } from "@/types/appointment";
+import { Appointment, AppointmentForm, StartAttendanceResponse } from "@/types/appointment";
 
 export async function getAppointments(): Promise<Appointment[]> {
   const response = await api.get("/api/appointments/");
@@ -23,5 +23,15 @@ export async function getAppointmentById(
   id: number
 ): Promise<Appointment> {
   const response = await api.get(`/api/appointments/${id}/`);
+  return response.data;
+}
+
+export async function startAppointmentAttendance(
+  id: number
+): Promise<StartAttendanceResponse> {
+  const response = await api.post(
+    `/api/appointments/${id}/iniciar_atendimento/`
+  );
+
   return response.data;
 }

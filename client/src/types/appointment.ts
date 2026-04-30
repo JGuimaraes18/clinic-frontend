@@ -20,7 +20,11 @@ export interface Appointment extends BaseModel {
 export interface AppointmentForm {
   data_hora: string;
   status: AppointmentStatus;
-  detalhes_atendimento: string;
+  observacoes: string;
   paciente: number | "";
   profissional: number | "";
+}
+
+export interface StartAttendanceResponse {
+  record_id: number;
 }

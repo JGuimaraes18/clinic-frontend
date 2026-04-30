@@ -6,6 +6,7 @@ import {
   getAppointments,
   createAppointment,
   updateAppointment,
+  startAppointmentAttendance,
 } from "@/services/appointmentsService";
 
 import { createMedicalRecord } from "@/services/medicalRecordService";
@@ -52,7 +53,7 @@ export default function Appointments() {
 
   const navigate = useNavigate();
 
-  // 🔥 AUTH GLOBAL CORRETO
+  // AUTH GLOBAL CORRETO
   const { user: currentUser } = useAuth();
 
   const [form, setForm] = useState<AppointmentForm>({
@@ -68,7 +69,7 @@ export default function Appointments() {
   }, [data]);
 
   // -----------------------------
-  // PERMISSÃO CORRIGIDA
+  // PERMISSÃO 
   // -----------------------------
   function canStart(appointment: Appointment) {
     if (!currentUser) return false;
@@ -163,16 +164,14 @@ export default function Appointments() {
   // -----------------------------
   // START APPOINTMENT
   // -----------------------------
-  async function handleStart(appointment: any) {
-    try {
-      const record = await createMedicalRecord({
-        atendimento: appointment.atendimento_id,
-        conteudo: "Atendimento iniciado",
-      });
 
-      navigate(`/atendimento/${record.id}`);
-    } catch (err: any) {
-      console.log(err.response?.data);
+  async function handleStart(appointmentId: number) {
+    try {
+      const res = await startAppointmentAttendance(appointmentId);
+
+      navigate(`/atendimento/${res.prontuario_id}`);
+    } catch (err) {
+      console.error(err);
       alert("Erro ao iniciar atendimento.");
     }
   }
