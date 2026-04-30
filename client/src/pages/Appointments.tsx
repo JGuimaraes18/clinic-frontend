@@ -99,12 +99,25 @@ export default function Appointments() {
     profissional: "",
   });
 
-  const filteredAppointments =
-    statusFilter === "TODOS"
-      ? appointments
-      : appointments.filter(
-          (a) => a.status === statusFilter
-        );
+  const filteredAppointments = appointments.filter((a) => {
+    const appointmentDate = a.data_hora.split("T")[0];
+
+    const matchStatus =
+      statusFilter === "TODOS" || a.status === statusFilter;
+
+    const matchDate =
+      !dateFilter || appointmentDate === dateFilter;
+
+    const matchPatient =
+      patientFilter === "TODOS" ||
+      String(a.paciente) === patientFilter;
+
+    const matchProfessional =
+      professionalFilter === "TODOS" ||
+      String(a.profissional) === professionalFilter;
+
+    return matchStatus && matchDate && matchPatient && matchProfessional;
+  });
 
   useEffect(() => {
     if (data) {
@@ -308,6 +321,41 @@ export default function Appointments() {
               {item.label}
             </button>
           ))}
+        </div>
+
+        <div className="flex flex-wrap gap-3 mb-6">
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="border rounded-lg px-3 py-1 text-sm"
+          />
+
+          <select
+            value={patientFilter}
+            onChange={(e) => setPatientFilter(e.target.value)}
+            className="border rounded-lg px-3 py-1 text-sm"
+          >
+            <option value="TODOS">Todos os pacientes</option>
+            {patients.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={professionalFilter}
+            onChange={(e) => setProfessionalFilter(e.target.value)}
+            className="border rounded-lg px-3 py-1 text-sm"
+          >
+            <option value="TODOS">Todos os profissionais</option>
+            {professionals.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

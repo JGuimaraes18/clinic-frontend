@@ -120,7 +120,7 @@ export default function Patients() {
               Pacientes
             </h1>
             <p className="text-sm text-gray-500">
-              Lista de pacientes cadastrados no sistema
+              Pacientes cadastrados no sistema
             </p>
           </div>
 

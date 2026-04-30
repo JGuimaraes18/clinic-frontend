@@ -141,7 +141,7 @@ export default function Professionals() {
               Profissionais
             </h1>
             <p className="text-sm text-gray-500">
-              Lista de profissionais cadastrados no sistema
+              Profissionais cadastrados no sistema
             </p>
           </div>
 
