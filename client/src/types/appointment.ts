@@ -3,7 +3,8 @@ import { BaseModel } from "./baseModel";
 export type AppointmentStatus =
   | "AGENDADO"
   | "CANCELADO"
-  | "REALIZADO";
+  | "REALIZADO"
+  | "EM_ATENDIMENTO";
 
 
 export interface Appointment extends BaseModel {
