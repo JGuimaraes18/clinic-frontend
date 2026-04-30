@@ -30,7 +30,7 @@ export async function startAppointmentAttendance(
   id: number
 ): Promise<StartAttendanceResponse> {
   const response = await api.post(
-    `/api/appointments/${id}/iniciar_atendimento/`
+    `/api/appointments/${id}/start_attendance/`
   );
 
   return response.data;
