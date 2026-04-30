@@ -69,6 +69,8 @@ export default function Appointments() {
   const [openModal, setOpenModal] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
 
+  const [statusFilter, setStatusFilter] = useState<string>("TODOS");
+
   const navigate = useNavigate();
 
   // AUTH GLOBAL CORRETO
@@ -82,8 +84,23 @@ export default function Appointments() {
     profissional: "",
   });
 
+  const filteredAppointments =
+    statusFilter === "TODOS"
+      ? appointments
+      : appointments.filter(
+          (a) => a.status === statusFilter
+        );
+
   useEffect(() => {
-    if (data) setAppointments(data);
+    if (data) {
+      const sorted = [...data].sort(
+        (a, b) =>
+          new Date(a.data_hora).getTime() -
+          new Date(b.data_hora).getTime()
+      );
+
+      setAppointments(sorted);
+    }
   }, [data]);
 
   // -----------------------------
@@ -209,7 +226,7 @@ export default function Appointments() {
   // -----------------------------
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">Agendamentos</h1>
           <p className="text-sm text-gray-500">
@@ -219,28 +236,51 @@ export default function Appointments() {
 
         <button
           onClick={openNewModal}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          className="bg-blue-600 text-white px-4 py-1 rounded-lg"
         >
           + Novo
         </button>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {[
+          { value: "TODOS", label: "Todos" },
+          { value: "AGENDADO", label: "Agendado" },
+          { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
+          { value: "REALIZADO", label: "Realizado" },
+          { value: "CANCELADO", label: "Cancelado" },
+        ].map((item) => (
+          <button
+            key={item.value}
+            onClick={() => setStatusFilter(item.value)}
+            className={`px-3 py-1 rounded-full text-sm transition mb-4
+              ${
+                statusFilter === item.value
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       {loading && <div>Carregando...</div>}
       {error && <div className="text-red-500">{error}</div>}
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {appointments.map((a) => (
+        {filteredAppointments.map((a) => (
           <div
             key={a.id}
             className="bg-white border rounded-xl p-5 shadow-sm"
           >
             <div className="flex justify-between">
-              <h3 className="font-semibold">
+              <h4 className="font-semibold">
                 {formatDate(a.data_hora)}
-              </h3>
+              </h4>
 
               <span
-                className={`px-3 py-1 text-xs rounded-full ${getStatusStyle(
+                className={`px-3 py-1 text-xs items-stretch rounded-full ${getStatusStyle(
                   a.status
                 )}`}
               >
@@ -297,9 +337,9 @@ export default function Appointments() {
       {openModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-full max-w-md space-y-4">
-            <h2 className="font-semibold">
+            <h3 className="font-semibold">
               {editing ? "Editar Agendamento" : "Novo Agendamento"}
-            </h2>
+            </h3>
 
             <input
               type="datetime-local"
@@ -350,14 +390,14 @@ export default function Appointments() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={handleClose}
-                className="border px-4 py-2 rounded"
+                className="border px-4 py-1 rounded-lg"
               >
                 Cancelar
               </button>
 
               <button
                 onClick={handleSave}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
+                className="bg-blue-600 text-white px-4 py-1 rounded-lg"
               >
                 Salvar
               </button>
