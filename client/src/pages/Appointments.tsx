@@ -214,7 +214,7 @@ export default function Appointments() {
 
     setCancelId(null);
   }
-  
+
   // -----------------------------
   // START APPOINTMENT
   // -----------------------------
@@ -246,7 +246,9 @@ export default function Appointments() {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Agendamentos</h1>
+            <h1 className="text-2xl font-bold">
+              Agendamentos
+            </h1>
             <p className="text-sm text-gray-500">
               Lista de agendamentos cadastrados
             </p>
@@ -283,15 +285,12 @@ export default function Appointments() {
           ))}
         </div>
 
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {loading && <div>Carregando...</div>}
         {error && <div className="text-red-500">{error}</div>}
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredAppointments.map((a) => (
-            <div
-              key={a.id}
-              className="bg-white border rounded-xl p-5 shadow-sm"
-            >
+            <div key={a.id} className="bg-white border rounded-xl p-5 shadow-sm" >
               <div className="flex justify-between">
                 <h4 className="font-semibold">
                   {formatDate(a.data_hora)}

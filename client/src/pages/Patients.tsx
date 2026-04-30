@@ -102,7 +102,7 @@ export default function Patients() {
     <>
       <div className="p-6">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               Pacientes
@@ -113,7 +113,7 @@ export default function Patients() {
           </div>
 
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-1 rounded-lg"
             onClick={() => setIsOpen(true)}
           >
             + Novo
