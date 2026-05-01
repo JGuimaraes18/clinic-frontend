@@ -34,7 +34,7 @@ export default function Login() {
           <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
             <Activity className="text-primary" size={28} />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">JG - Gestão Clínica</h1>
+          <h1 className="text-2xl font-bold text-foreground">Gestão Clínica</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Acesse sua conta para continuar
           </p>

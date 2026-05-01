@@ -11,7 +11,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
 
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -46,30 +46,25 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Se não for 401 ou já tentou refresh
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
-    // Marca para não entrar em loop
     originalRequest._retry = true;
 
     const refreshToken = localStorage.getItem("refresh_token");
 
     if (!refreshToken) {
-      logout();
       return Promise.reject(error);
     }
 
     if (isRefreshing) {
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
-      })
-        .then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        })
-        .catch((err) => Promise.reject(err));
+      }).then((token) => {
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      });
     }
 
     isRefreshing = true;
@@ -93,21 +88,15 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (err) {
       processQueue(err, null);
-      logout();
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+
       return Promise.reject(err);
     } finally {
       isRefreshing = false;
     }
   }
 );
-
-// =============================
-// LOGOUT CENTRALIZADO
-// =============================
-function logout() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  window.location.href = "/login";
-}
 
 export default api;
