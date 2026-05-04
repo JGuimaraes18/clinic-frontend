@@ -8,7 +8,7 @@ import Patients from "@/pages/Patients";
 import Appointments from "@/pages/Appointments";
 import NotFound from "@/pages/NotFound";
 import Attendance from "@/pages/Attendance";
-import AppointmentsCalendar from "@/pages/Appointments-calendar";
+import AppointmentsCalendar from "@/pages/AppointmentsCalendar";
 
 export default function AppRoutes() {
   return (

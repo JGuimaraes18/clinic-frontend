@@ -7,7 +7,6 @@ import {
   createAppointment,
   updateAppointment,
   startAppointmentAttendance,
-  getAppointmentById,
 } from "@/services/appointmentsService";
 
 import Modal from "@/components/modal/Modal";
@@ -19,11 +18,6 @@ import { getProfessionals } from "@/services/professionalService";
 import { Appointment, AppointmentForm } from "@/types/appointment";
 import { useAuth } from "@/contexts/AuthContext";
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleString("pt-BR");
-}
-
 function getNowForInput() {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -33,35 +27,58 @@ function getNowForInput() {
 function getStatusStyle(status: string) {
   switch (status) {
     case "AGENDADO":
-      return "bg-blue-100 text-blue-700";      
-    case "REALIZADO":
-      return "bg-green-100 text-green-700";
-    case "CANCELADO":
-      return "bg-red-100 text-red-700";
+      return {
+        card: "bg-blue-50 border-blue-200",
+        badge: "bg-blue-100 text-blue-700",
+      };
+
     case "EM_ATENDIMENTO":
-      return "bg-yellow-100 text-yellow-700";
+      return {
+        card: "bg-yellow-50 border-yellow-200",
+        badge: "bg-yellow-100 text-yellow-700",
+      };
+
+    case "REALIZADO":
+      return {
+        card: "bg-green-50 border-green-200",
+        badge: "bg-green-100 text-green-700",
+      };
+
+    case "CANCELADO":
+      return {
+        card: "bg-red-50 border-red-200 opacity-70",
+        badge: "bg-red-100 text-red-700",
+      };
+
     default:
-      return "bg-gray-100 text-gray-700";
+      return {
+        card: "bg-gray-50 border-gray-200",
+        badge: "bg-gray-100 text-gray-700",
+      };
   }
 }
 
 function getStatusLabel(status: string) {
   switch (status) {
     case "AGENDADO":
-      return "Agendado";      
-    case "REALIZADO":
-      return "Realizado";
-    case "CANCELADO":
-      return "Cancelado";
+      return "Agendado";
+
     case "EM_ATENDIMENTO":
       return "Em Atendimento";
+
+    case "REALIZADO":
+      return "Realizado";
+
+    case "CANCELADO":
+      return "Cancelado";
+
     default:
-      return status;
+      return "Desconhecido";
   }
 }
 
 export default function AppointmentsCalendar() {
-  const { data, loading, error } =
+  const { data } =
     useFetch<Appointment[]>(getAppointments);
 
   const { data: patientsData } = useFetch(getPatients);
@@ -74,7 +91,7 @@ export default function AppointmentsCalendar() {
   const [openModal, setOpenModal] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<string>("AGENDADO");
+  const [statusFilter, setStatusFilter] = useState<string>("TODOS");
   const [dateFilter, setDateFilter] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -195,6 +212,14 @@ export default function AppointmentsCalendar() {
     
   }
 
+  function sortByDate(list: Appointment[]) {
+    return [...list].sort(
+      (a, b) =>
+        new Date(a.data_hora).getTime() -
+        new Date(b.data_hora).getTime()
+    );
+  }
+
   // -----------------------------
   // SAVE
   // -----------------------------
@@ -210,14 +235,14 @@ export default function AppointmentsCalendar() {
         const updated = await updateAppointment(editing.id, form);
 
         setAppointments((prev) =>
-          prev.map((a) => (a.id === editing.id ? updated : a))
+          sortByDate(prev.map((a) => (a.id === editing.id ? updated : a)))
         );
 
         setSuccessMessage("Agendamento atualizado com sucesso!");
       } else {
         const newAppointment = await createAppointment(form);
 
-        setAppointments((prev) => [...prev, newAppointment]);
+        setAppointments((prev) => sortByDate([...prev, newAppointment]));
 
         setSuccessMessage("Agendamento criado com sucesso!");
       }
@@ -252,9 +277,7 @@ export default function AppointmentsCalendar() {
       status: "CANCELADO",
     });
 
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === cancelId ? updated : a))
-    );
+    setAppointments((prev) => sortByDate(prev.map((a) => (a.id === cancelId ? updated : a))));
 
     setCancelId(null);
   }
@@ -395,40 +418,73 @@ export default function AppointmentsCalendar() {
 
                 {/* Coluna compromissos */}
                 <div className="flex-1 p-3 space-y-2">
-                  {hourAppointments.length === 0 && (
-                    <div className="text-xs text-gray-300">
-                      —
-                    </div>
-                  )}
+                  {hourAppointments.map((a) => {
+                    const styles = getStatusStyle(a.status);
 
-                  {hourAppointments.map((a) => (
-                    <div
-                      key={a.id}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-sm shadow-sm"
-                    >
-                      <div className="font-semibold">
-                        {a.paciente_nome}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Prof: {a.profissional_nome}
-                      </div>
-
-                      {a.status === "EM_ATENDIMENTO" && (
-                        <div className="mt-1 text-xs text-yellow-600 font-medium">
-                          Em atendimento
+                    return (
+                      <div
+                        key={a.id}
+                        className={`border rounded-lg p-3 text-sm shadow-sm transition ${styles.card}`}
+                      >
+                        <div className="text-base font-bold mb-2">
+                          {new Date(a.data_hora).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
-                      )}
 
-                      {a.status === "AGENDADO" && (
-                        <button
-                          onClick={() => handleStart(a.id)}
-                          className="mt-2 bg-green-600 text-white px-2 py-1 rounded text-xs"
-                        >
-                          Iniciar
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                        <div className="flex justify-between items-start">
+                          <div className="font-semibold">
+                            Paciente: {a.paciente_nome}
+                          </div>
+
+                          <div
+                            className={`text-xs font-medium px-2 py-1 rounded-full ${styles.badge}`}
+                          >
+                            {getStatusLabel(a.status)}
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-600 mt-1">
+                          Dr(a). {a.profissional_nome}
+                        </div>
+
+                        {a.status === "AGENDADO" && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            <button
+                              onClick={() => handleStart(a.id)}
+                              className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                            >
+                              Iniciar
+                            </button>
+
+                            <button
+                              onClick={() => openEditModal(a)}
+                              className="bg-gray-500 text-white px-2 py-1 rounded text-xs hover:bg-gray-600"
+                            >
+                              Editar
+                            </button>
+
+                            <button
+                              onClick={() => handleCancel(a.id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        )}
+
+                        {a.status === "EM_ATENDIMENTO" && (
+                          <button
+                            onClick={() => handleAttendance(a.id)}
+                            className="mt-3 bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                          >
+                            Continuar
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

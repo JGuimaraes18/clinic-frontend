@@ -73,13 +73,8 @@ export default function Appointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [editing, setEditing] = useState<Appointment | null>(null);
-
-  const [statusFilter, setStatusFilter] = useState<string>("AGENDADO");
-  const [dateFilter, setDateFilter] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
-
+  const [statusFilter, setStatusFilter] = useState<string>("TODOS");
+  const [dateFilter, setDateFilter] = useState<string>("");
   const [patientFilter, setPatientFilter] = useState<string>("TODOS");
   const [professionalFilter, setProfessionalFilter] = useState<string>("TODOS");
   const [submitted, setSubmitted] = useState(false);
@@ -99,14 +94,20 @@ export default function Appointments() {
     profissional: "",
   });
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const filteredAppointments = appointments.filter((a) => {
-    const appointmentDate = a.data_hora.split("T")[0];
+    const appointmentDate = new Date(a.data_hora);
+
+    if (isNaN(appointmentDate.getTime())) {
+      return false;
+    }
+
+    appointmentDate.setHours(0, 0, 0, 0);
 
     const matchStatus =
       statusFilter === "TODOS" || a.status === statusFilter;
-
-    const matchDate =
-      !dateFilter || appointmentDate === dateFilter;
 
     const matchPatient =
       patientFilter === "TODOS" ||
@@ -116,13 +117,18 @@ export default function Appointments() {
       professionalFilter === "TODOS" ||
       String(a.profissional) === professionalFilter;
 
+    const matchDate = dateFilter
+      ? appointmentDate.toISOString().slice(0, 10) === dateFilter
+      : appointmentDate.getTime() >= today.getTime();
+
     return matchStatus && matchDate && matchPatient && matchProfessional;
   });
     
-  const appointmentsOfDay = filteredAppointments.filter((a) => {
-    const d = new Date(a.data_hora);
-    return d.toISOString().slice(0, 10) === dateFilter;
-  });
+  function handleClearFilters() {
+    setPatientFilter("TODOS");
+    setProfessionalFilter("TODOS");
+    setDateFilter("");
+  }
 
   useEffect(() => {
     if (data) {
@@ -135,15 +141,6 @@ export default function Appointments() {
       setAppointments(sorted);
     }
   }, [data]);
-
-  function generateHours() {
-    const hours = [];
-    for (let h = 7; h <= 19; h++) {
-      hours.push(`${h.toString().padStart(2, "0")}:00`);
-    }
-    return hours;
-  }
-
 
   // -----------------------------
   // PERMISSÃO 
@@ -195,6 +192,14 @@ export default function Appointments() {
     
   }
 
+  function sortByDate(list: Appointment[]) {
+    return [...list].sort(
+      (a, b) =>
+        new Date(a.data_hora).getTime() -
+        new Date(b.data_hora).getTime()
+    );
+  }
+
   // -----------------------------
   // SAVE
   // -----------------------------
@@ -210,14 +215,14 @@ export default function Appointments() {
         const updated = await updateAppointment(editing.id, form);
 
         setAppointments((prev) =>
-          prev.map((a) => (a.id === editing.id ? updated : a))
+          sortByDate(prev.map((a) => (a.id === editing.id ? updated : a)))  
         );
 
         setSuccessMessage("Agendamento atualizado com sucesso!");
       } else {
         const newAppointment = await createAppointment(form);
 
-        setAppointments((prev) => [...prev, newAppointment]);
+        setAppointments((prev) => sortByDate([...prev, newAppointment]));
 
         setSuccessMessage("Agendamento criado com sucesso!");
       }
@@ -252,9 +257,7 @@ export default function Appointments() {
       status: "CANCELADO",
     });
 
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === cancelId ? updated : a))
-    );
+    setAppointments((prev) => sortByDate(prev.map((a) => (a.id === cancelId ? updated : a))));
 
     setCancelId(null);
   }
@@ -370,6 +373,14 @@ export default function Appointments() {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={handleClearFilters}
+            className="border rounded-lg px-3 py-1 text-sm"
+          >
+            Limpar Filtros
+          </button>
+
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
