@@ -102,6 +102,8 @@ export default function AppointmentsCalendar() {
   const [submitted, setSubmitted] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+
 
   const navigate = useNavigate();
 
@@ -155,7 +157,7 @@ export default function AppointmentsCalendar() {
 
   function generateHours() {
     const hours = [];
-    for (let h = 7; h <= 19; h++) {
+    for (let h = 0; h < 24; h++) {
       hours.push(`${h.toString().padStart(2, "0")}:00`);
     }
     return hours;
@@ -224,6 +226,8 @@ export default function AppointmentsCalendar() {
   // SAVE
   // -----------------------------
   async function handleSave() {
+    if (saving) return;
+
     setSubmitted(true);
 
     if (!form.data_hora || !form.paciente || !form.profissional) {
@@ -231,6 +235,7 @@ export default function AppointmentsCalendar() {
     }
 
     try {
+      setSaving(true);
       if (editing) {
         const updated = await updateAppointment(editing.id, form);
 
@@ -251,10 +256,12 @@ export default function AppointmentsCalendar() {
         setSuccessMessage(null);
       }, 2000);
 
-      setSubmitted(false);
       handleClose();
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
+      setSubmitted(false);
     }
   }
 
@@ -409,10 +416,10 @@ export default function AppointmentsCalendar() {
             return (
               <div
                 key={hour}
-                className="flex border-b last:border-b-0 min-h-[80px]"
+                className="flex border-b last:border-b-0 min-h-[50px]"
               >
                 {/* Coluna horário */}
-                <div className="w-24 bg-gray-50 text-sm text-gray-500 flex items-start justify-center pt-3 border-r">
+                <div className="w-18 bg-gray-50 text-sm text-gray-500 flex items-start justify-center pt-3 border-r">
                   {hour}
                 </div>
 
@@ -424,9 +431,9 @@ export default function AppointmentsCalendar() {
                     return (
                       <div
                         key={a.id}
-                        className={`border rounded-lg p-3 text-sm shadow-sm transition ${styles.card}`}
+                        className={`border rounded-lg p-1 text-sm shadow-sm transition ${styles.card}`}
                       >
-                        <div className="text-base font-bold mb-2">
+                        <div className="text-base font-bold mb-1">
                           {new Date(a.data_hora).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -439,7 +446,7 @@ export default function AppointmentsCalendar() {
                           </div>
 
                           <div
-                            className={`text-xs font-medium px-2 py-1 rounded-full ${styles.badge}`}
+                            className={`text-xs font-medium px-1 py-1 rounded-full ${styles.badge}`}
                           >
                             {getStatusLabel(a.status)}
                           </div>
@@ -450,7 +457,7 @@ export default function AppointmentsCalendar() {
                         </div>
 
                         {a.status === "AGENDADO" && (
-                          <div className="flex flex-wrap gap-1 mt-3">
+                          <div className="flex flex-wrap gap-1 mt-2">
                             <button
                               onClick={() => handleStart(a.id)}
                               className="bg-green-600 text-white px-2 py-1 rounded text-xs"
@@ -490,78 +497,7 @@ export default function AppointmentsCalendar() {
             );
           })}
         </div>
-        
-        {/* <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {loading && <div>Carregando...</div>}
-        {error && <div className="text-red-500">{error}</div>}
-
-          {filteredAppointments.map((a) => (
-            <div key={a.id} className="bg-white border rounded-xl p-5 shadow-sm" >
-              <div className="flex justify-between">
-                <h4 className="font-semibold">
-                  {formatDate(a.data_hora)}
-                </h4>
-
-                <span
-                  className={`px-3 py-1 text-xs items-stretch rounded-full ${getStatusStyle(
-                    a.status
-                  )}`}
-                >
-                  {getStatusLabel(a.status)}
-                </span>
-              </div>
-
-              <div className="mt-4 text-sm">
-                <p>
-                  <strong>Paciente:</strong> {a.paciente_nome}
-                </p>
-                <p>
-                  <strong>Profissional:</strong> {a.profissional_nome}
-                </p>
-              </div>
-
-              {a.status === "AGENDADO" && (
-                <div className="mt-4 flex gap-2">
-                  {canStart(a) && (
-                    <button
-                      onClick={() => handleStart(a.id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Iniciar Atendimento
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => openEditModal(a)}
-                    className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => handleCancel(a.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              )}
-
-              {a.status === "EM_ATENDIMENTO" && (
-                <div className="mt-4 flex gap-2">
-                  {canStart(a) && (
-                    <button
-                      onClick={() => handleAttendance(a.id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Continuar Atendimento
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div> */}
+      
         {cancelId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/30">
             <div className="bg-white rounded-xl shadow-lg p-6 w-80">
@@ -663,9 +599,14 @@ export default function AppointmentsCalendar() {
 
             <button
               onClick={handleSave}
-              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+              disabled={saving}
+              className={`px-4 py-1 rounded-lg text-white ${
+                saving
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              Salvar
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </div>

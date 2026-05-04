@@ -7,7 +7,6 @@ import {
   createAppointment,
   updateAppointment,
   startAppointmentAttendance,
-  getAppointmentById,
 } from "@/services/appointmentsService";
 
 import Modal from "@/components/modal/Modal";
@@ -80,6 +79,7 @@ export default function Appointments() {
   const [submitted, setSubmitted] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const navigate = useNavigate();
 
@@ -204,6 +204,8 @@ export default function Appointments() {
   // SAVE
   // -----------------------------
   async function handleSave() {
+    if (saving) return;
+
     setSubmitted(true);
 
     if (!form.data_hora || !form.paciente || !form.profissional) {
@@ -211,6 +213,7 @@ export default function Appointments() {
     }
 
     try {
+      setSaving(true);
       if (editing) {
         const updated = await updateAppointment(editing.id, form);
 
@@ -231,10 +234,12 @@ export default function Appointments() {
         setSuccessMessage(null);
       }, 2000);
 
-      setSubmitted(false);
       handleClose();
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
+      setSubmitted(false);
     }
   }
 
@@ -555,9 +560,14 @@ export default function Appointments() {
 
             <button
               onClick={handleSave}
-              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+              disabled={saving}
+              className={`px-4 py-1 rounded-lg text-white ${
+                saving
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              Salvar
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </div>
