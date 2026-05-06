@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Lock, User } from "lucide-react";
-import api from "@/services/api";
-import { login } from "@/services/authService";
+import { Activity, Lock, User, Hospital } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
+  const [clinic, setClinic] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,9 +17,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(username, password);
-      navigate("/");
-    } catch (error) {
+      await login(clinic, username, password);
+
+      navigate("/", { replace: true });
+
+    } catch (error: any) {
+      console.log(error?.response?.data);
       alert("Usuário ou senha inválidos");
     } finally {
       setLoading(false);
@@ -42,8 +46,29 @@ export default function Login() {
 
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
-          
-          {/* Username */}
+
+          {/* Clínica */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-foreground">
+              Clínica
+            </label>
+            <div className="relative">
+              <Hospital
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                type="text"
+                required
+                value={clinic}
+                onChange={(e) => setClinic(e.target.value)}
+                className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                placeholder="Nome da clínica"
+              />
+            </div>
+          </div>
+
+          {/* Usuário */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">
               Usuário
@@ -64,7 +89,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Password */}
+          {/* Senha */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">
               Senha
@@ -85,7 +110,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Button */}
+          {/* Botão */}
           <button
             type="submit"
             disabled={loading}

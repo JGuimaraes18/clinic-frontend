@@ -9,6 +9,8 @@ import Appointments from "@/pages/Appointments";
 import NotFound from "@/pages/NotFound";
 import Attendance from "@/pages/Attendance";
 import AppointmentsCalendar from "@/pages/AppointmentsCalendar";
+import Users from "@/pages/Users";
+import Clinics from "@/pages/Clinics";
 
 export default function AppRoutes() {
   return (
@@ -22,7 +24,9 @@ export default function AppRoutes() {
           <Route path="calendar" element={<AppointmentsCalendar />} />
           <Route path="pacientes" element={<Patients />} />
           <Route path="profissionais" element={<Professionals />} />
-          <Route path="/atendimento/:id" element={<Attendance />} />
+          <Route path="atendimento/:id" element={<Attendance />} />
+          <Route path="usuarios" element={<Users />} />
+          <Route path="clinicas" element={<Clinics />} />
         </Route>
       </Route>
 

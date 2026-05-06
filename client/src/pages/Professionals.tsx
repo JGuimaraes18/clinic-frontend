@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "@/components/modal/Modal";
-import {
-  getProfessionals,
-  createProfessional,
-  updateProfessional,
-} from "@/services/professionalService";
+import { getProfessionals, createProfessional, updateProfessional, } from "@/services/professionalService";
 import { useFetch } from "@/hooks/useFetch";
 import { formatPhone } from "@/utils/format";
 import { Professional } from "@/types/professional";

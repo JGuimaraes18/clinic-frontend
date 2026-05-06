@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser } from "@/services/authService";
+import { getCurrentUser, login as loginService } from "@/services/authService";
 
 type User = {
   id: number;
@@ -15,12 +15,14 @@ type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  login: (clinic: string, username: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  login: async () => {},
   logout: () => {},
 });
 
@@ -28,6 +30,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const login = async (
+    clinic: string,
+    username: string,
+    password: string
+  ) => {
+    await loginService(clinic, username, password);
+
+    const data = await getCurrentUser();
+    setUser(data);
+  };
+
+  // 🚪 LOGOUT
   const logout = () => {
     setUser(null);
     localStorage.removeItem("access_token");
@@ -58,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

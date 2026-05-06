@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
-  Activity,
-  Calendar,
-  Users,
-  Stethoscope,
-  Menu,
-  X,
-  LogOut,
-} from "lucide-react";
+import { Activity, Calendar, Users, Stethoscope, Menu, X, LogOut, } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   // detecta mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -29,6 +23,12 @@ export default function AppLayout() {
     { path: "/calendar", label: "Calendário", icon: Calendar },
     { path: "/pacientes", label: "Pacientes", icon: Users },
     { path: "/profissionais", label: "Profissionais", icon: Stethoscope },
+    ...(user?.is_superuser
+      ? [{ path: "/usuarios", label: "Usuários", icon: Users }]
+      : []),
+    ...(user?.is_superuser
+      ? [{ path: "/clinicas", label: "Clínicas", icon: Stethoscope }]
+      : []),
   ];
 
   useEffect(() => {
@@ -39,9 +39,8 @@ export default function AppLayout() {
   }, []);
 
   function handleLogout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    navigate("/login");
+    logout();
+    navigate("/login", { replace: true });
   }
 
   return (

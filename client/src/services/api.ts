@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -45,6 +46,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const navigate = useNavigate();
+    
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
@@ -91,6 +94,7 @@ api.interceptors.response.use(
 
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      navigate("/login");
 
       return Promise.reject(err);
     } finally {
