@@ -169,7 +169,9 @@ export default function Professionals() {
 
         {!loading && professionals.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {professionals.map((p) => (
+            {[...professionals]
+            .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" }))
+            .map((p) => (
               <div
                 key={p.id}
                 onClick={() => handleEdit(p)}

@@ -62,17 +62,17 @@ export default function AppLayout() {
 
           ${isMobile
             ? sidebarOpen
-              ? "left-0 w-64"
-              : "-left-64 w-64"
+              ? "left-0 w-40"
+              : "-left-64 w-40"
             : sidebarCollapsed
               ? "w-20"
-              : "w-64"
+              : "w-50"
           }
         `}
       >
 
         {/* HEADER */}
-        <div className="p-6 border-b border-border flex items-center justify-between bg-primary text-white">
+        <div className="p-2 border-b border-border flex items-center justify-between bg-primary text-white">
           {!sidebarCollapsed && !isMobile && (
             <h1 className="text-lg font-bold">
               Sistema Clínica
@@ -104,16 +104,16 @@ export default function AppLayout() {
                 if (isMobile) setSidebarOpen(false);
               }}
               className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded-lg transition
+                w-full flex items-center gap-2 px-2 py-2 rounded-lg transition
                 ${location.pathname === path
                   ? "bg-secondary text-primary font-semibold"
                   : "text-foreground hover:bg-secondary"
                 }
               `}
             >
-              <Icon size={20} />
+              <Icon size={16} />
               {(!sidebarCollapsed || isMobile) && (
-                <span>{label}</span>
+                <span className="text-sm">{label}</span>
               )}
             </button>
           ))}
@@ -125,7 +125,7 @@ export default function AppLayout() {
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-red-50 rounded-lg"
           >
-            <LogOut size={20} />
+            <LogOut size={16} />
             {(!sidebarCollapsed || isMobile) && (
               <span>Sair</span>
             )}
@@ -138,11 +138,13 @@ export default function AppLayout() {
 
         {/* TOPBAR MOBILE */}
         {isMobile && (
-          <div className="p-4 border-b flex items-center md:hidden">
+          // <div className="p-4 border-b flex items-center md:hidden">
+          <div className="p-2 border-b border-border flex items-center bg-primary text-white">
+
             <button onClick={() => setSidebarOpen(true)}>
               <Menu />
             </button>
-            <h1 className="ml-4 font-semibold">
+            <h1 className="ml-4 text-base sm:text-lg font-semibold">
               Sistema Clínica
             </h1>
           </div>

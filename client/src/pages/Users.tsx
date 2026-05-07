@@ -195,7 +195,9 @@ export default function Users() {
               </thead>
 
               <tbody className="divide-y divide-gray-200">
-                {users.map((u) => (
+                {[...users]
+                  .sort((a, b) => a.first_name.localeCompare(b.first_name, "pt-BR", { sensitivity: "base" }))
+                  .map((u) => (
                   <tr
                     key={u.id}
                     onClick={() => handleEdit(u)}

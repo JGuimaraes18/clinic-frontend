@@ -128,7 +128,9 @@ export default function Clinics() {
             {error && <div className="p-6 text-red-500">{error}</div>}
 
             <div className="divide-y">
-                {clinics.map((c) => (
+                {[...clinics]
+                .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }))
+                .map((c) => (
                 <div
                     key={c.id}
                     onClick={() => handleEdit(c)}

@@ -174,7 +174,9 @@ export default function Patients() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-200">
-                    {patients.map((p) => {
+                    {[...patients]
+                    .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" }))
+                    .map((p) => {
                       const age = calculateAge(p.birth_date);
 
                       return (
