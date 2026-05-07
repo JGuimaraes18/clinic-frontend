@@ -13,7 +13,7 @@ export interface User {
   last_name: string;
   full_name: string;
   role: UserRole;
-  clinic: UserClinic | null;
+  clinic: UserClinic;
   is_superuser: boolean;
 }
 
@@ -23,7 +23,7 @@ export interface UserForm {
   first_name: string;
   last_name: string;
   role: UserRole;
-  clinic: number | null;
+  clinic: number | null; 
   password?: string;
 }
 
@@ -35,5 +35,14 @@ export interface UserUpdate {
   last_name?: string;
   role: UserRole;
   clinic: number | null;
+  password?: string;
+}
+
+export interface UserErrors {
+  username?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  clinic?: string;
   password?: string;
 }

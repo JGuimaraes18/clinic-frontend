@@ -1,17 +1,8 @@
 import { useState, useEffect } from "react";
 import Modal from "@/components/modal/Modal";
-import {
-  getPatients,
-  createPatient,
-  updatePatient,
-} from "@/services/patientService";
+import { getPatients, createPatient, updatePatient } from "@/services/patientService";
 import { useFetch } from "@/hooks/useFetch";
-import {
-  formatCPF,
-  formatPhone,
-  formatDateBR,
-  calculateAge,
-} from "@/utils/format";
+import { formatCPF, formatPhone, formatDateBR, calculateAge } from "@/utils/format";
 import { Patient, PatientForm } from "@/types/patient";
 
 export default function Patients() {
@@ -302,7 +293,6 @@ export default function Patients() {
         title={editingId ? "Editar Paciente" : "Novo Paciente"}
       >
         <div className="space-y-3">
-
           <input
             type="text"
             placeholder="Nome completo"

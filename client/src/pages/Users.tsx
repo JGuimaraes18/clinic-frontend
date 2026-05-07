@@ -4,7 +4,7 @@ import { getUsers, createUser, updateUser } from "@/services/authService";
 import { getClinics } from "@/services/clinicService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFetch } from "@/hooks/useFetch";
-import { User, UserForm } from "@/types/users";
+import { User, UserForm, UserErrors } from "@/types/users";
 
 export default function Users() {
   const { data, loading, error } = useFetch<User[]>(getUsers);
@@ -44,8 +44,17 @@ export default function Users() {
     loadClinics();
   }, [loggedUser]);
 
+  async function loadUsers() {
+    const users = await getUsers();
+    setUsers(users);
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
   function validate() {
-    const newErrors: Partial<UserForm> = {};
+    const newErrors: UserErrors = {};
 
     if (!form.username.trim())
       newErrors.username = "Username obrigatório";
@@ -54,6 +63,15 @@ export default function Users() {
       newErrors.email = "Email obrigatório";
     else if (!emailRegex.test(form.email))
       newErrors.email = "Email inválido";
+
+    if (!form.first_name.trim())
+      newErrors.first_name = "Nome obrigatório";
+
+    if (!form.last_name.trim())
+      newErrors.last_name = "Sobrenome obrigatório";
+
+    if (!form.clinic)
+      newErrors.clinic = "Clínica obrigatória";
 
     if (!editingId && !form.password)
       newErrors.password = "Senha obrigatória";
@@ -80,25 +98,20 @@ export default function Users() {
   async function handleSave() {
     if (!validate()) return;
 
-    console.log("Payload enviado:", form); 
-    
+    const payload = { ...form };
+    if (!payload.password) {
+      delete payload.password;
+    }
+
     try {
       if (editingId) {
-        const updated = await updateUser(editingId, form);
-
-        setUsers((prev) =>
-          prev.map((u) => (u.id === editingId ? updated : u))
-        );
-
+        const updated = await updateUser(editingId, payload);
         setSuccessMessage("Usuário atualizado com sucesso!");
       } else {
-        const newUser = await createUser(form);
-
-        setUsers((prev) => [...prev, newUser]);
-
+        const newUser = await createUser(payload);
         setSuccessMessage("Usuário criado com sucesso!");
       }
-
+      await loadUsers(); 
       handleClose();
     } catch (err) {
       console.error(err);
@@ -224,7 +237,6 @@ export default function Users() {
               </tbody>
             </table>
           )}
-
         </div>
       </div>
 
@@ -233,15 +245,11 @@ export default function Users() {
         onClose={handleClose}
         title={
           editingId
-            ? "Editar Profissional"
-            : "Novo Profissional"
+            ? "Editar Usuário"
+            : "Novo Usuário"
         }
       >
         <div className="p-6 space-y-4">
-          <h2 className="text-xl font-semibold">
-            {editingId ? "Editar Usuário" : "Novo Usuário"}
-          </h2>
-
           <input
             name="username"
             value={form.username}
@@ -249,7 +257,9 @@ export default function Users() {
               setForm({ ...form, username: e.target.value })
             }
             placeholder="Usuário"
-            className="w-full border p-2 rounded"
+            className={`w-full border p-3 rounded-lg ${
+              errors.username ? "border-red-500" : "border-gray-300"
+            }`}
           />
 
           <input
@@ -259,7 +269,9 @@ export default function Users() {
               setForm({ ...form, email: e.target.value })
             }
             placeholder="Email"
-            className="w-full border p-2 rounded"
+            className={`w-full border p-3 rounded-lg ${
+              errors.email ? "border-red-500" : "border-gray-300"
+            }`}
           />
 
           {!editingId && (
@@ -271,7 +283,9 @@ export default function Users() {
                 setForm({ ...form, password: e.target.value })
               }
               placeholder="Senha"
-              className="w-full border p-2 rounded"
+              className={`w-full border p-3 rounded-lg ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              }`}
             />
           )}
 
@@ -282,7 +296,9 @@ export default function Users() {
               setForm({ ...form, first_name: e.target.value })
             }
             placeholder="Nome"
-            className="w-full border p-2 rounded"
+            className={`w-full border p-3 rounded-lg ${
+              errors.first_name ? "border-red-500" : "border-gray-300"
+            }`}
           />
 
           <input
@@ -292,7 +308,9 @@ export default function Users() {
               setForm({ ...form, last_name: e.target.value })
             }
             placeholder="Sobrenome"
-            className="w-full border p-2 rounded"
+            className={`w-full border p-3 rounded-lg ${
+              errors.last_name ? "border-red-500" : "border-gray-300"
+            }`}
           />
 
           <select
@@ -318,7 +336,9 @@ export default function Users() {
                   clinic: e.target.value ? Number(e.target.value) : null,
                 })
               }
-              className="w-full border p-2 rounded"
+              className={`w-full border p-3 rounded-lg ${
+                errors.clinic ? "border-red-500" : "border-gray-300"
+              }`}
             >
               <option value="">Selecione a clínica</option>
               {clinics.map((c) => (
