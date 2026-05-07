@@ -59,7 +59,6 @@ export default function Login() {
               />
               <input
                 type="text"
-                required
                 value={clinic}
                 onChange={(e) => setClinic(e.target.value)}
                 className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"

@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "professional" | "staff";
+export type UserRole = "ADMIN" | "PROFESSIONAL" | "ATTENDANT";
 
 export interface UserClinic {
   id: number;
@@ -13,7 +13,7 @@ export interface User {
   last_name: string;
   full_name: string;
   role: UserRole;
-  clinic: UserClinic;
+  clinic: UserClinic | null;
   is_superuser: boolean;
 }
 
@@ -23,18 +23,17 @@ export interface UserForm {
   first_name: string;
   last_name: string;
   role: UserRole;
-  clinic: number | null; 
+  clinic: number | null;
   password?: string;
 }
-
 
 export interface UserUpdate {
   username?: string;
   email?: string;
   first_name?: string;
   last_name?: string;
-  role: UserRole;
-  clinic: number | null;
+  role?: UserRole;
+  clinic?: number | null;
   password?: string;
 }
 

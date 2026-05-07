@@ -1,16 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser, login as loginService } from "@/services/authService";
-
-type User = {
-  id: number;
-  username: string;
-  role: string;
-  clinic: {
-    id: number;
-    name: string;
-  };
-  is_superuser: boolean;
-};
+import { User } from "@/types/users";
 
 type AuthContextType = {
   user: User | null;
@@ -30,24 +20,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // =============================
+  // LOGIN
+  // =============================
   const login = async (
     clinic: string,
     username: string,
     password: string
   ) => {
-    await loginService(clinic, username, password);
+    try {
+      await loginService(clinic, username, password);
 
-    const data = await getCurrentUser();
-    setUser(data);
+      const data = await getCurrentUser();
+      setUser(data);
+    } catch (error) {
+      logout();
+      throw error;
+    }
   };
 
-  // 🚪 LOGOUT
+  // =============================
+  // LOGOUT
+  // =============================
   const logout = () => {
     setUser(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
   };
 
+  // =============================
+  // AUTO LOAD USER (refresh page)
+  // =============================
   useEffect(() => {
     async function load() {
       const token = localStorage.getItem("access_token");

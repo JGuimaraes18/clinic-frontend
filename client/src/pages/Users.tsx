@@ -22,7 +22,7 @@ export default function Users() {
     first_name: "",
     last_name: "",
     email: "",
-    role: "staff",
+    role: "ATTENDANT",
     clinic: null,
     password: "",
   });
@@ -89,7 +89,7 @@ export default function Users() {
       first_name: "",
       last_name: "",
       email: "",
-      role: "staff",
+      role: "ATTENDANT",
       clinic: null,
       password: "",
     });
@@ -134,10 +134,19 @@ export default function Users() {
     setIsOpen(true);
   }
 
-  function getRoleLabel(role: string) {
-    if (role === "admin") return "Administrador";
-    if (role === "professional") return "Profissional";
-    return "Equipe";
+  function getRoleLabel(role?: string) {
+    if (!role) return "-";
+
+    switch (role.toUpperCase()) {
+      case "ADMIN":
+        return "Administrador";
+      case "PROFESSIONAL":
+        return "Profissional";
+      case "ATTENDANT":
+        return "Atendente";
+      default:
+        return role;
+    }
   }
 
   return (
@@ -323,9 +332,9 @@ export default function Users() {
             }
             className="w-full border p-2 rounded"
           >
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
-            <option value="professional">Profissional</option>
+            <option value="ADMIN">Administrador</option>
+            <option value="PROFESSIONAL">Profissional</option>
+            <option value="ATTENDANT">Atendente</option>
           </select>
 
           {loggedUser?.is_superuser && (
