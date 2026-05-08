@@ -23,7 +23,7 @@ export default function Users() {
     last_name: "",
     email: "",
     role: "ATTENDANT",
-    clinic: null,
+    clinic_id: null,
     password: "",
   });
 
@@ -40,7 +40,6 @@ export default function Users() {
         setClinics(data);
       }
     }
-
     loadClinics();
   }, [loggedUser]);
 
@@ -70,11 +69,11 @@ export default function Users() {
     if (!form.last_name.trim())
       newErrors.last_name = "Sobrenome obrigatório";
 
-    if (!form.clinic)
-      newErrors.clinic = "Clínica obrigatória";
-
     if (!editingId && !form.password)
       newErrors.password = "Senha obrigatória";
+
+    if (loggedUser?.is_superuser && !form.clinic_id)
+      newErrors.clinic_id = "Clínica obrigatória";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -90,7 +89,7 @@ export default function Users() {
       last_name: "",
       email: "",
       role: "ATTENDANT",
-      clinic: null,
+      clinic_id: null,
       password: "",
     });
   }
@@ -98,21 +97,26 @@ export default function Users() {
   async function handleSave() {
     if (!validate()) return;
 
-    const payload = { ...form };
-    if (!payload.password) {
-      delete payload.password;
-    }
+    const payload: any = { ...form };
+
+    if (!payload.password) delete payload.password;
+    if (!payload.role) delete payload.role;
+    if (payload.clinic_id === null) delete payload.clinic_id;
 
     try {
       if (editingId) {
-        const updated = await updateUser(editingId, payload);
+        await updateUser(editingId, payload);
         setSuccessMessage("Usuário atualizado com sucesso!");
       } else {
-        const newUser = await createUser(payload);
+        await createUser(payload);
         setSuccessMessage("Usuário criado com sucesso!");
       }
-      await loadUsers(); 
+
+      await loadUsers();
       handleClose();
+
+      setTimeout(() => setSuccessMessage(null), 3000);
+
     } catch (err) {
       console.error(err);
     }
@@ -121,13 +125,15 @@ export default function Users() {
   function handleEdit(user: User) {
     setEditingId(user.id);
 
+    const membership = user.memberships?.[0];
+
     setForm({
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
-      role: user.role,
-      clinic: user.clinic?.id || null,
+      role: membership ? membership.role : "ATTENDANT",
+      clinic_id: membership ? membership.clinic.id : null,
       password: "",
     });
 
@@ -152,7 +158,6 @@ export default function Users() {
   return (
     <>
       <div className="p-6">
-
         {successMessage && (
           <div className="fixed top-6 right-6 z-50">
             <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
@@ -180,15 +185,8 @@ export default function Users() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-
           {loading && <div className="p-6">Carregando...</div>}
           {error && <div className="p-6 text-red-500">{error}</div>}
-
-          {!loading && users.length === 0 && (
-            <div className="p-6 text-gray-500">
-              Nenhum usuário cadastrado.
-            </div>
-          )}
 
           {!loading && users.length > 0 && (
             <table className="min-w-full text-sm">
@@ -205,46 +203,55 @@ export default function Users() {
 
               <tbody className="divide-y divide-gray-200">
                 {[...users]
-                  .sort((a, b) => a.first_name.localeCompare(b.first_name, "pt-BR", { sensitivity: "base" }))
+                  .sort((a, b) =>
+                    a.first_name.localeCompare(b.first_name, "pt-BR", {
+                      sensitivity: "base",
+                    })
+                  )
                   .map((u) => (
-                  <tr
-                    key={u.id}
-                    onClick={() => handleEdit(u)}
-                    className="hover:bg-blue-50 cursor-pointer"
-                  >
-                    <td className="px-6 py-4 font-medium">
-                      {u.full_name || `${u.first_name} ${u.last_name}`}
-                    </td>
+                    <tr
+                      key={u.id}
+                      onClick={() => handleEdit(u)}
+                      className="hover:bg-blue-50 cursor-pointer"
+                    >
+                      <td className="px-6 py-4 font-medium">
+                        {u.full_name ||
+                          `${u.first_name} ${u.last_name}`}
+                      </td>
 
-                    <td className="px-6 py-4 text-gray-600">
-                      {u.username}
-                    </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {u.username}
+                      </td>
 
-                    <td className="px-6 py-4 text-gray-600">
-                      {u.email}
-                    </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {u.email}
+                      </td>
 
-                    <td className="px-6 py-4 text-gray-600">
-                      {u.clinic?.name || "-"}
-                    </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {u.memberships && u.memberships.length > 0
+                          ? u.memberships.map((m) => m.clinic.name).join(", ")
+                          : "-"}
+                      </td>
 
-                    <td className="px-6 py-4 text-gray-600">
-                      {getRoleLabel(u.role)}
-                    </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {u.memberships && u.memberships.length > 0
+                          ? u.memberships.map((m) => getRoleLabel(m.role)).join(", ")
+                          : "-"}
+                      </td>
 
-                    <td className="px-6 py-4 text-center">
-                      {u.is_superuser ? (
-                        <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
-                          Superuser
-                        </span>
-                      ) : (
-                        <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">
-                          Usuário
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-4 text-center">
+                        {u.is_superuser ? (
+                          <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                            Superuser
+                          </span>
+                        ) : (
+                          <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">
+                            Usuário
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           )}
@@ -254,15 +261,11 @@ export default function Users() {
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        title={
-          editingId
-            ? "Editar Usuário"
-            : "Novo Usuário"
-        }
+        title={editingId ? "Editar Usuário" : "Novo Usuário"}
       >
         <div className="p-6 space-y-4">
+
           <input
-            name="username"
             value={form.username}
             onChange={(e) =>
               setForm({ ...form, username: e.target.value })
@@ -274,7 +277,6 @@ export default function Users() {
           />
 
           <input
-            name="email"
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
@@ -287,7 +289,6 @@ export default function Users() {
 
           {!editingId && (
             <input
-              name="password"
               type="password"
               value={form.password}
               onChange={(e) =>
@@ -301,34 +302,27 @@ export default function Users() {
           )}
 
           <input
-            name="first_name"
             value={form.first_name}
             onChange={(e) =>
               setForm({ ...form, first_name: e.target.value })
             }
             placeholder="Nome"
-            className={`w-full border p-3 rounded-lg ${
-              errors.first_name ? "border-red-500" : "border-gray-300"
-            }`}
+            className="w-full border p-3 rounded-lg border-gray-300"
           />
 
           <input
-            name="last_name"
             value={form.last_name}
             onChange={(e) =>
               setForm({ ...form, last_name: e.target.value })
             }
             placeholder="Sobrenome"
-            className={`w-full border p-3 rounded-lg ${
-              errors.last_name ? "border-red-500" : "border-gray-300"
-            }`}
+            className="w-full border p-3 rounded-lg border-gray-300"
           />
 
           <select
-            name="role"
             value={form.role}
             onChange={(e) =>
-              setForm({ ...form, role: e.target.value as any })
+              setForm({ ...form, role: e.target.value })
             }
             className="w-full border p-2 rounded"
           >
@@ -338,17 +332,18 @@ export default function Users() {
           </select>
 
           {loggedUser?.is_superuser && (
-          <select
-              name="clinic"
-              value={form.clinic || ""}
+            <select
+              value={form.clinic_id || ""}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  clinic: e.target.value ? Number(e.target.value) : null,
+                  clinic_id: e.target.value
+                    ? Number(e.target.value)
+                    : null,
                 })
               }
               className={`w-full border p-3 rounded-lg ${
-                errors.clinic ? "border-red-500" : "border-gray-300"
+                errors.clinic_id ? "border-red-500" : "border-gray-300"
               }`}
             >
               <option value="">Selecione a clínica</option>

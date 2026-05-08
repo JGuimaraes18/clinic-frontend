@@ -1,8 +1,12 @@
 export type UserRole = "ADMIN" | "PROFESSIONAL" | "ATTENDANT";
 
-export interface UserClinic {
+export interface Membership {
   id: number;
-  name: string;
+  role: UserRole;
+  clinic: {
+    id: number;
+    name: string;
+  };
 }
 
 export interface User {
@@ -12,9 +16,8 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
-  role: UserRole;
-  clinic: UserClinic | null;
   is_superuser: boolean;
+  memberships: Membership[];
 }
 
 export interface UserForm {
@@ -23,19 +26,19 @@ export interface UserForm {
   first_name: string;
   last_name: string;
   role: UserRole;
-  clinic: number | null;
+  clinic_id: number | null;
   password?: string;
 }
 
-export interface UserUpdate {
-  username?: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  role?: UserRole;
-  clinic?: number | null;
-  password?: string;
-}
+// export interface UserUpdate {
+//   username?: string;
+//   email?: string;
+//   first_name?: string;
+//   last_name?: string;
+//   role?: UserRole;
+//   clinic?: number | null;
+//   password?: string;
+// }
 
 export interface UserErrors {
   username?: string;

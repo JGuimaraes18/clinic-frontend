@@ -163,18 +163,21 @@ export default function AppointmentsCalendar() {
     return hours;
   }
 
+  const isAdminOfClinic = currentUser?.memberships?.some(
+    (m) => m.role === "ADMIN" || m.role === "PROFESSIONAL"
+  );
 
   // -----------------------------
   // PERMISSÃO 
   // -----------------------------
-  function canStart(appointment: Appointment) {
+  function canStart() {
     if (!currentUser) return false;
 
-    return (
-      currentUser.is_superuser ||
-      currentUser.role === "admin" ||
-      appointment.profissional === currentUser.id
-    );
+    if (currentUser.is_superuser) return true;
+
+    if (isAdminOfClinic) return true;
+
+    return false;
   }
 
   // -----------------------------
@@ -458,12 +461,14 @@ export default function AppointmentsCalendar() {
 
                         {a.status === "AGENDADO" && (
                           <div className="flex flex-wrap gap-1 mt-2">
-                            <button
-                              onClick={() => handleStart(a.id)}
-                              className="bg-green-600 text-white px-2 py-1 rounded text-xs"
-                            >
-                              Iniciar
-                            </button>
+                            {canStart(a) && (
+                              <button
+                                onClick={() => handleStart(a.id)}
+                                className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                              >
+                                Iniciar
+                              </button>
+                            )}
 
                             <button
                               onClick={() => openEditModal(a)}

@@ -3,6 +3,7 @@ import { Professional } from "@/types/professional";
 
 export async function getProfessionals(): Promise<Professional[]> {
   const response = await api.get("/api/professionals/");
+  console.log("Response from getProfessionals:", response);
   return response.data;
 }
 
@@ -11,10 +12,7 @@ export async function createProfessional(data: any): Promise<Professional> {
   return response.data;
 }
 
-export async function updateProfessional(
-  id: number,
-  data: Professional
-): Promise<Professional> {
-  const response = await api.put(`/api/professionals/${id}/`, data);
+export async function updateProfessional(id: number, data: any) {
+  const response = await api.patch(`/api/professionals/${id}/`, data);
   return response.data;
 }

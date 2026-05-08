@@ -1,20 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFetch } from "@/hooks/useFetch";
-
-import {
-  getAppointments,
-  createAppointment,
-  updateAppointment,
-  startAppointmentAttendance,
-} from "@/services/appointmentsService";
-
+import { getAppointments, createAppointment, updateAppointment, startAppointmentAttendance } from "@/services/appointmentsService";
 import Modal from "@/components/modal/Modal";
-
 import { getMedicalRecordByAppointment } from "@/services/medicalRecordService";
 import { getPatients } from "@/services/patientService";
 import { getProfessionals } from "@/services/professionalService";
-
 import { Appointment, AppointmentForm } from "@/types/appointment";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -142,17 +133,21 @@ export default function Appointments() {
     }
   }, [data]);
 
+  const isAdminOfClinic = currentUser?.memberships?.some(
+    (m) => m.role === "ADMIN" || m.role === "PROFESSIONAL"
+  );
+
   // -----------------------------
   // PERMISSÃO 
   // -----------------------------
-  function canStart(appointment: Appointment) {
+  function canStart() {
     if (!currentUser) return false;
 
-    return (
-      currentUser.is_superuser ||
-      currentUser.role === "admin" ||
-      appointment.profissional === currentUser.id
-    );
+    if (currentUser.is_superuser) return true;
+
+    if (isAdminOfClinic) return true;
+
+    return false;
   }
 
   // -----------------------------

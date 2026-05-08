@@ -1,50 +1,64 @@
 import { useState, useEffect } from "react";
 import Modal from "@/components/modal/Modal";
-import { getProfessionals, createProfessional, updateProfessional, } from "@/services/professionalService";
 import { useFetch } from "@/hooks/useFetch";
-import { formatPhone } from "@/utils/format";
-import { Professional } from "@/types/professional";
-import { ProfessionalForm } from "@/types/professional";
+import { useAuth } from "@/contexts/AuthContext";
+import { getProfessionals, createProfessional, updateProfessional } from "@/services/professionalService";
+import { getUsers } from "@/services/authService";
+import { Professional, ProfessionalForm } from "@/types/professional";
+import { User } from "@/types/users";
 
 export default function Professionals() {
-  const { data, loading, error } =
-    useFetch<Professional[]>(getProfessionals);
+  const { user } = useAuth();
+  const { data, loading, error } = useFetch<Professional[]>(getProfessionals);
 
   const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<ProfessionalForm>({
-    full_name: "",
-    phone: "",
-    email: "",
+    user: null,
     registration_type: "",
     registration_number: "",
     specialty: "",
     is_active: true,
   });
 
-  const [errors, setErrors] =
-    useState<Partial<ProfessionalForm>>({});
+  const [errors, setErrors] = useState<Partial<ProfessionalForm>>({});
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const clinicId = Number(localStorage.getItem("clinic_id"));
+
+  const isAdminOfClinic = user?.memberships?.some(
+    (m) => m.role === "ADMIN"
+  );
+
+  const canCreateProfessional = user?.is_superuser || isAdminOfClinic;
 
   useEffect(() => {
     if (data) setProfessionals(data);
   }, [data]);
 
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const res = await getUsers();
+        setUsers(res);
+      } catch (err) {
+        console.error("Erro ao carregar users", err);
+      }
+    }
+
+    loadUsers();
+  }, []);
+
+
   function validate() {
     const newErrors: Partial<ProfessionalForm> = {};
 
-    if (!form.full_name.trim())
-      newErrors.full_name = "Nome é obrigatório";
-
-    if (!form.phone.trim())
-      newErrors.phone = "Telefone é obrigatório";
-
-    if (form.email && !emailRegex.test(form.email))
-      newErrors.email = "Email inválido";
+    if (!form.user)
+      newErrors.user  = "Usuário é obrigatório";
 
     if (!form.registration_type.trim())
       newErrors.registration_type = "Tipo de registro obrigatório";
@@ -65,9 +79,7 @@ export default function Professionals() {
     setEditingId(null);
 
     setForm({
-      full_name: "",
-      phone: "",
-      email: "",
+      user: null,
       registration_type: "",
       registration_number: "",
       specialty: "",
@@ -80,9 +92,17 @@ export default function Professionals() {
   async function handleSave() {
     if (!validate()) return;
 
+    const payload = {
+      user: form.user,
+      registration_type: form.registration_type,
+      registration_number: form.registration_number,
+      specialty: form.specialty,
+      is_active: form.is_active,
+    };
+
     try {
       if (editingId) {
-        const updated = await updateProfessional(editingId, form);
+        const updated = await updateProfessional(editingId, payload as any);
 
         setProfessionals((prev) =>
           prev.map((p) => (p.id === editingId ? updated : p))
@@ -90,14 +110,15 @@ export default function Professionals() {
 
         setSuccessMessage("Profissional atualizado com sucesso!");
       } else {
-        const created = await createProfessional(form);
+        const created = await createProfessional(payload);
 
         setProfessionals((prev) => [...prev, created]);
         setSuccessMessage("Profissional criado com sucesso!");
-
       }
 
       handleClose();
+
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error(err);
     }
@@ -107,12 +128,9 @@ export default function Professionals() {
     setEditingId(professional.id);
 
     setForm({
-      full_name: professional.full_name || "",
-      phone: professional.phone || "",
-      email: professional.email || "",
-      registration_type: professional.registration_type || "",
-      registration_number:
-        professional.registration_number || "",
+      user: professional.user,
+      registration_type: professional.registration_type,
+      registration_number: professional.registration_number,
       specialty: professional.specialty || "",
       is_active: professional.is_active,
     });
@@ -123,6 +141,7 @@ export default function Professionals() {
   return (
     <>
       <div className="p-6">
+
         {successMessage && (
           <div className="fixed top-6 right-6 z-50">
             <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
@@ -130,6 +149,7 @@ export default function Professionals() {
             </div>
           </div>
         )}
+
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -141,14 +161,17 @@ export default function Professionals() {
             </p>
           </div>
 
+        {canCreateProfessional && (
           <button
             onClick={() => setIsOpen(true)}
             className="bg-blue-600 text-white px-4 py-1 rounded-lg"
           >
             + Novo
           </button>
+        )}
         </div>
 
+        {/* LIST */}
         {loading && (
           <div className="p-6 text-gray-500">
             Carregando profissionais...
@@ -170,58 +193,58 @@ export default function Professionals() {
         {!loading && professionals.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {[...professionals]
-            .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" }))
-            .map((p) => (
-              <div
-                key={p.id}
-                onClick={() => handleEdit(p)}
-                className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition cursor-pointer"
-              >
-                <h3 className="text-lg font-semibold">
-                  {p.full_name}
-                </h3>
+              .sort((a, b) =>
+                a.full_name.localeCompare(b.full_name, "pt-BR", {
+                  sensitivity: "base",
+                })
+              )
+              .map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => handleEdit(p)}
+                  className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition cursor-pointer"
+                >
+                  <h3 className="text-lg font-semibold">
+                    {p.full_name}
+                  </h3>
 
-                <p className="text-sm text-gray-500">
-                  {p.email}
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {formatPhone(p.phone)}
-                </p>
-
-                <div className="mt-4 space-y-1 text-sm">
-                  <p>
-                    <span className="font-medium">
-                      Registro:
-                    </span>{" "}
-                    {p.registration_type} -{" "}
-                    {p.registration_number}
+                  <p className="text-sm text-gray-500">
+                    {p.email}
                   </p>
 
-                  <p>
-                    <span className="font-medium">
-                      Especialidade:
-                    </span>{" "}
-                    {p.specialty}
-                  </p>
+                  <div className="mt-4 space-y-1 text-sm">
+                    <p>
+                      <span className="font-medium">
+                        Registro:
+                      </span>{" "}
+                      {p.registration_type} -{" "}
+                      {p.registration_number}
+                    </p>
 
-                  <p>
-                    <span className="font-medium">
-                      Status:
-                    </span>{" "}
-                    <span
-                      className={`font-semibold ${
-                        p.is_active
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {p.is_active ? "Ativo" : "Inativo"}
-                    </span>
-                  </p>
+                    <p>
+                      <span className="font-medium">
+                        Especialidade:
+                      </span>{" "}
+                      {p.specialty || "-"}
+                    </p>
+
+                    <p>
+                      <span className="font-medium">
+                        Status:
+                      </span>{" "}
+                      <span
+                        className={`font-semibold ${
+                          p.is_active
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {p.is_active ? "Ativo" : "Inativo"}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>
@@ -237,65 +260,31 @@ export default function Professionals() {
         }
       >
         <div className="space-y-3">
-          <input
-            type="text"
-            placeholder="Nome completo"
-            className={`w-full border p-3 rounded-lg ${
-              errors.full_name
-                ? "border-red-500"
-                : "border-gray-300"
-            }`}
-            value={form.full_name}
-            onChange={(e) =>
-              setForm({ ...form, full_name: e.target.value })
-            }
-          />
-          {errors.full_name && (
-            <p className="text-xs text-red-500">
-              {errors.full_name}
-            </p>
-          )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            className={`w-full border p-3 rounded-lg ${
-              errors.email
-                ? "border-red-500"
-                : "border-gray-300"
-            }`}
-            value={form.email}
-            onChange={(e) =>
-              setForm({ ...form, email: e.target.value })
-            }
-          />
-          {errors.email && (
-            <p className="text-xs text-red-500">
-              {errors.email}
-            </p>
-          )}
-
-          <input
-            type="text"
-            placeholder="Telefone"
-            className={`w-full border p-3 rounded-lg ${
-              errors.phone
-                ? "border-red-500"
-                : "border-gray-300"
-            }`}
-            value={form.phone}
+          {/* USER SELECT */}
+          <select
+            value={form.user || ""}
             onChange={(e) =>
               setForm({
                 ...form,
-                phone: formatPhone(e.target.value),
+                user: Number(e.target.value),
               })
             }
-          />
-          {errors.phone && (
-            <p className="text-xs text-red-500">
-              {errors.phone}
-            </p>
-          )}
+            className={`w-full border p-3 rounded-lg ${
+              errors.user ? "border-red-500" : "border-gray-300"
+            }`}
+          >
+            <option value="">Selecione o usuário</option>
+            {users
+              .filter((u) =>
+                u.memberships?.some((m) => m.role === "PROFESSIONAL")
+              )
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.first_name} {u.last_name} ({u.email})
+                </option>
+              ))}
+          </select>
 
           <input
             type="text"

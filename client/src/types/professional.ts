@@ -1,8 +1,8 @@
 import { BaseModel } from "./baseModel";
 
 export interface Professional extends BaseModel {
+  user: number;
   full_name: string;
-  phone: string;
   email: string;
 
   registration_type: string;
@@ -10,13 +10,10 @@ export interface Professional extends BaseModel {
   specialty: string;
 
   is_active: boolean;
-  clinic: number;
 }
 
 export interface ProfessionalForm {
-  full_name: string;
-  phone: string;
-  email: string;
+  user: number | null;
   registration_type: string;
   registration_number: string;
   specialty: string;
