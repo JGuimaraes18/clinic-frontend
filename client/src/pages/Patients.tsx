@@ -173,7 +173,7 @@ export default function Patients() {
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 text-xs">
                     {[...patients]
                     .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" }))
                     .map((p) => {

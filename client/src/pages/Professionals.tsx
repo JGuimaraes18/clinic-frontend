@@ -208,11 +208,11 @@ export default function Professionals() {
                     {p.full_name}
                   </h3>
 
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     {p.email}
                   </p>
 
-                  <div className="mt-4 space-y-1 text-sm">
+                  <div className="mt-4 space-y-1 text-xs">
                     <p>
                       <span className="font-medium">
                         Registro:

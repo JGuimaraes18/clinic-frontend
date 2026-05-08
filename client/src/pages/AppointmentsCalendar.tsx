@@ -143,6 +143,12 @@ export default function AppointmentsCalendar() {
     return d.toISOString().slice(0, 10) === dateFilter;
   });
 
+  function handleClearFilters() {
+    setPatientFilter("TODOS");
+    setProfessionalFilter("TODOS");
+    setDateFilter("");
+  }
+
   useEffect(() => {
     if (data) {
       const sorted = [...data].sort(
@@ -375,13 +381,13 @@ export default function AppointmentsCalendar() {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           />
 
           <select
             value={patientFilter}
             onChange={(e) => setPatientFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           >
             <option value="TODOS">Todos os pacientes</option>
             {patients.map((p: any) => (
@@ -394,7 +400,7 @@ export default function AppointmentsCalendar() {
           <select
             value={professionalFilter}
             onChange={(e) => setProfessionalFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           >
             <option value="TODOS">Todos os profissionais</option>
             {professionals.map((p: any) => (
@@ -403,6 +409,13 @@ export default function AppointmentsCalendar() {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={handleClearFilters}
+            className="border rounded-lg px-3 py-1 text-xs"
+          >
+            Limpar Filtros
+          </button>
         </div>
 
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -419,10 +432,10 @@ export default function AppointmentsCalendar() {
             return (
               <div
                 key={hour}
-                className="flex border-b last:border-b-0 min-h-[50px]"
+                className="flex border-b last:border-b-0 min-h-[40px]"
               >
                 {/* Coluna horário */}
-                <div className="w-18 bg-gray-50 text-sm text-gray-500 flex items-start justify-center pt-3 border-r">
+                <div className="w-14 bg-gray-50 text-sm text-gray-500 flex items-start justify-center pt-3 border-r text-xs">
                   {hour}
                 </div>
 
@@ -434,9 +447,9 @@ export default function AppointmentsCalendar() {
                     return (
                       <div
                         key={a.id}
-                        className={`border rounded-lg p-1 text-sm shadow-sm transition ${styles.card}`}
+                        className={`border rounded-lg p-1 text-xs shadow-sm transition ${styles.card}`}
                       >
-                        <div className="text-base font-bold mb-1">
+                        <div className="text-xs font-bold mb-1">
                           {new Date(a.data_hora).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -464,7 +477,7 @@ export default function AppointmentsCalendar() {
                             {canStart(a) && (
                               <button
                                 onClick={() => handleStart(a.id)}
-                                className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                                className="bg-green-600 text-white px-2 py-1 rounded-lg"
                               >
                                 Iniciar
                               </button>
@@ -472,14 +485,14 @@ export default function AppointmentsCalendar() {
 
                             <button
                               onClick={() => openEditModal(a)}
-                              className="bg-gray-500 text-white px-2 py-1 rounded text-xs hover:bg-gray-600"
+                              className="bg-gray-500 text-white px-2 py-1 rounded-lg text-xs"
                             >
                               Editar
                             </button>
 
                             <button
                               onClick={() => handleCancel(a.id)}
-                              className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                              className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs"
                             >
                               Cancelar
                             </button>
@@ -489,7 +502,7 @@ export default function AppointmentsCalendar() {
                         {a.status === "EM_ATENDIMENTO" && (
                           <button
                             onClick={() => handleAttendance(a.id)}
-                            className="mt-3 bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                            className="mt-3 bg-yellow-600 text-white px-2 py-1 rounded-lg text-xs"
                           >
                             Continuar
                           </button>

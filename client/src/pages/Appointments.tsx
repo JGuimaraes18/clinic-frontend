@@ -345,13 +345,13 @@ export default function Appointments() {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           />
 
           <select
             value={patientFilter}
             onChange={(e) => setPatientFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           >
             <option value="TODOS">Todos os pacientes</option>
             {patients.map((p: any) => (
@@ -364,7 +364,7 @@ export default function Appointments() {
           <select
             value={professionalFilter}
             onChange={(e) => setProfessionalFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           >
             <option value="TODOS">Todos os profissionais</option>
             {professionals.map((p: any) => (
@@ -376,7 +376,7 @@ export default function Appointments() {
 
           <button
             onClick={handleClearFilters}
-            className="border rounded-lg px-3 py-1 text-sm"
+            className="border rounded-lg px-3 py-1 text-xs"
           >
             Limpar Filtros
           </button>
@@ -417,7 +417,7 @@ export default function Appointments() {
                   {canStart(a) && (
                     <button
                       onClick={() => handleStart(a.id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+                      className="bg-green-600 text-white px-2 py-1 rounded-lg text-xs"
                     >
                       Iniciar Atendimento
                     </button>
@@ -425,14 +425,14 @@ export default function Appointments() {
 
                   <button
                     onClick={() => openEditModal(a)}
-                    className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
+                    className="bg-gray-500 text-white px-2 py-1 rounded-lg text-xs"
                   >
                     Editar
                   </button>
 
                   <button
                     onClick={() => handleCancel(a.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                    className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs"
                   >
                     Cancelar
                   </button>
