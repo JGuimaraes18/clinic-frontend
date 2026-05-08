@@ -189,14 +189,14 @@ export default function Users() {
           {error && <div className="p-6 text-red-500">{error}</div>}
 
           {!loading && users.length > 0 && (
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-xs">
               <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
                 <tr>
                   <th className="px-6 py-3 text-left">Nome</th>
                   <th className="px-6 py-3 text-left">Username</th>
-                  <th className="px-6 py-3 text-left">Email</th>
                   <th className="px-6 py-3 text-left">Clínica</th>
                   <th className="px-6 py-3 text-left">Perfil</th>
+                  <th className="px-6 py-3 text-left">Email</th>
                   <th className="px-6 py-3 text-center">Tipo</th>
                 </tr>
               </thead>
@@ -223,9 +223,6 @@ export default function Users() {
                         {u.username}
                       </td>
 
-                      <td className="px-6 py-4 text-gray-600">
-                        {u.email}
-                      </td>
 
                       <td className="px-6 py-4 text-gray-600">
                         {u.memberships && u.memberships.length > 0
@@ -239,9 +236,13 @@ export default function Users() {
                           : "-"}
                       </td>
 
+                      <td className="px-6 py-4 text-gray-600">
+                        {u.email}
+                      </td>
+
                       <td className="px-6 py-4 text-center">
                         {u.is_superuser ? (
-                          <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
                             Superuser
                           </span>
                         ) : (

@@ -127,7 +127,7 @@ export default function Clinics() {
             {loading && <div className="p-6">Carregando...</div>}
             {error && <div className="p-6 text-red-500">{error}</div>}
 
-            <div className="divide-y">
+            <div className="divide-y text-sm">
                 {[...clinics]
                 .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }))
                 .map((c) => (

@@ -204,7 +204,7 @@ export default function Professionals() {
                   onClick={() => handleEdit(p)}
                   className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition cursor-pointer"
                 >
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-sm font-semibold">
                     {p.full_name}
                   </h3>
 
