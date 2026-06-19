@@ -8,6 +8,7 @@ import { getPatients } from "@/services/patientService";
 import { getProfessionals } from "@/services/professionalService";
 import { Appointment, AppointmentForm } from "@/types/appointment";
 import { useAuth } from "@/contexts/AuthContext";
+import { Calendar, Stethoscope } from "lucide-react";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -23,15 +24,15 @@ function getNowForInput() {
 function getStatusStyle(status: string) {
   switch (status) {
     case "AGENDADO":
-      return "bg-blue-100 text-blue-700";      
+      return "bg-blue-50 text-blue-600 border border-blue-200/60 shadow-sm shadow-blue-100";      
     case "REALIZADO":
-      return "bg-green-100 text-green-700";
+      return "bg-green-50 text-green-600 border border-green-200/60 shadow-sm shadow-green-100";
     case "CANCELADO":
-      return "bg-red-100 text-red-700";
+      return "bg-red-50 text-red-600 border border-red-200/60 shadow-sm shadow-red-100";
     case "EM_ATENDIMENTO":
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-yellow-50 text-yellow-700 border border-yellow-200/60 shadow-sm shadow-yellow-100";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-50 text-gray-600 border border-gray-200";
   }
 }
 
@@ -299,105 +300,120 @@ export default function Appointments() {
           </div>
         )}
         
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Agendamentos
             </h1>
-            <p className="text-sm text-gray-500">
-              Lista de agendamentos cadastrados
+            <p className="text-sm text-gray-500 font-medium">
+              Gerencie as consultas e atendimentos da clínica
             </p>
           </div>
 
           {!isProfessional && (
             <button
               onClick={openNewModal}
-              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+              className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/25 transition-all transform hover:-translate-y-0.5"
             >
-              + Novo
+              + Novo Agendamento
             </button>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {[
-            { value: "AGENDADO", label: "Agendado" },
-            { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
-            { value: "REALIZADO", label: "Realizado" },
-            { value: "CANCELADO", label: "Cancelado" },
-            { value: "TODOS", label: "Todos" },
-          ].map((item) => (
-            <button
-              key={item.value}
-              onClick={() => setStatusFilter(item.value)}
-              className={`px-3 py-1 rounded-full text-sm transition mb-4
-                ${
-                  statusFilter === item.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-8 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "AGENDADO", label: "Agendado" },
+              { value: "EM_ATENDIMENTO", label: "Em Atendimento" },
+              { value: "REALIZADO", label: "Realizado" },
+              { value: "CANCELADO", label: "Cancelado" },
+              { value: "TODOS", label: "Todos" },
+            ].map((item) => (
+              <button
+                key={item.value}
+                onClick={() => setStatusFilter(item.value)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
+                  ${
+                    statusFilter === item.value
+                      ? "bg-gray-900 text-white shadow-md shadow-gray-900/20"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200/60"
+                  }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            />
+
+            <select
+              value={patientFilter}
+              onChange={(e) => setPatientFilter(e.target.value)}
+              className="border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
             >
-              {item.label}
+              <option value="TODOS">Todos os pacientes</option>
+              {patients.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={professionalFilter}
+              onChange={(e) => setProfessionalFilter(e.target.value)}
+              className="border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            >
+              <option value="TODOS">Todos os profissionais</option>
+              {professionals.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleClearFilters}
+              className="text-gray-500 hover:text-gray-900 text-sm font-medium px-4 py-2 transition-colors ml-auto"
+            >
+              Limpar Filtros
             </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-3 mb-6">
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-xs"
-          />
-
-          <select
-            value={patientFilter}
-            onChange={(e) => setPatientFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-xs"
-          >
-            <option value="TODOS">Todos os pacientes</option>
-            {patients.map((p: any) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={professionalFilter}
-            onChange={(e) => setProfessionalFilter(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-xs"
-          >
-            <option value="TODOS">Todos os profissionais</option>
-            {professionals.map((p: any) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={handleClearFilters}
-            className="border rounded-lg px-3 py-1 text-xs"
-          >
-            Limpar Filtros
-          </button>
-
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {loading && <div>Carregando...</div>}
-        {error && <div className="text-red-500">{error}</div>}
+        {loading && <div className="col-span-full py-12 flex justify-center text-gray-400 font-medium">Carregando agendamentos...</div>}
+        {error && <div className="col-span-full py-12 text-center text-red-500 font-medium">{error}</div>}
+        {!loading && !error && filteredAppointments.length === 0 && (
+          <div className="col-span-full py-16 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+             <Calendar className="w-12 h-12 mb-3 text-gray-300" />
+             <p className="font-medium">Nenhum agendamento encontrado.</p>
+          </div>
+        )}
 
           {filteredAppointments.map((a) => (
-            <div key={a.id} className="bg-white border rounded-xl p-5 shadow-sm" >
-              <div className="flex justify-between">
-                <h4 className="font-semibold">
-                  {formatDate(a.data_hora)}
-                </h4>
+            <div 
+              key={a.id} 
+              className="bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(6,81,237,0.1)] transition-all duration-300 group flex flex-col" 
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="space-y-1">
+                  <h4 className="text-2xl font-bold text-gray-900 tracking-tight">
+                    {new Date(a.data_hora).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}
+                  </h4>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    {new Date(a.data_hora).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
 
                 <span
-                  className={`px-3 py-1 text-xs items-stretch rounded-full ${getStatusStyle(
+                  className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${getStatusStyle(
                     a.status
                   )}`}
                 >
@@ -405,58 +421,65 @@ export default function Appointments() {
                 </span>
               </div>
 
-              <div className="mt-4 text-sm">
-                <p>
-                  <strong>Paciente:</strong> {a.paciente_nome}
-                </p>
-                <p>
-                  <strong>Profissional:</strong> {a.profissional_nome}
-                </p>
+              <div className="flex-1 space-y-3 mb-6 bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
+                <div>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Paciente</p>
+                  <p className="font-semibold text-gray-800">{a.paciente_nome}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Profissional</p>
+                  <p className="font-medium text-gray-600 flex items-center gap-2">
+                    <Stethoscope size={14} className="text-primary" />
+                    Dr(a). {a.profissional_nome}
+                  </p>
+                </div>
               </div>
 
-              {a.status === "AGENDADO" && (
-                <div className="mt-4 flex gap-2">
-                  {canStart() && (
-                    <button
-                      onClick={() => handleStart(a.id)}
-                      className="bg-green-600 text-white px-2 py-1 rounded-lg text-xs"
-                    >
-                      Iniciar Atendimento
-                    </button>
-                  )}
-
-                  {!isProfessional && (
-                    <>
+              <div className="mt-auto">
+                {a.status === "AGENDADO" && (
+                  <div className="flex gap-2">
+                    {canStart() && (
                       <button
-                        onClick={() => openEditModal(a)}
-                        className="bg-gray-500 text-white px-2 py-1 rounded-lg text-xs"
+                        onClick={() => handleStart(a.id)}
+                        className="flex-1 bg-gray-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md shadow-gray-900/20 hover:-translate-y-0.5"
                       >
-                        Editar
+                        Iniciar Consulta
                       </button>
+                    )}
 
+                    {!isProfessional && (
+                      <>
+                        <button
+                          onClick={() => openEditModal(a)}
+                          className="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          onClick={() => handleCancel(a.id)}
+                          className="px-4 py-2.5 rounded-xl text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {a.status === "EM_ATENDIMENTO" && (
+                  <div className="flex gap-2">
+                    {canStart() && (
                       <button
-                        onClick={() => handleCancel(a.id)}
-                        className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs"
+                        onClick={() => handleAttendance(a.id)}
+                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md shadow-yellow-500/20 hover:-translate-y-0.5"
                       >
-                        Cancelar
+                        Continuar Consulta
                       </button>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {a.status === "EM_ATENDIMENTO" && (
-                <div className="mt-4 flex gap-2">
-                  {canStart() && (
-                    <button
-                      onClick={() => handleAttendance(a.id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Continuar Atendimento
-                    </button>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

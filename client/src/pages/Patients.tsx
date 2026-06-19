@@ -118,66 +118,62 @@ export default function Patients() {
           </div>
         )}
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Pacientes
             </h1>
-            <p className="text-sm text-gray-500">
-              Pacientes cadastrados no sistema
+            <p className="text-sm text-gray-500 font-medium">
+              Gestão de cadastros e históricos dos pacientes
             </p>
           </div>
 
           {!isProfessional && (
             <button
-              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+              className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-primary/25 transition-all transform hover:-translate-y-0.5"
               onClick={() => setIsOpen(true)}
             >
-              + Novo
+              + Novo Paciente
             </button>
           )}
         </div>
 
         {/* CONTAINER */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
 
           {loading && (
-            <div className="p-6 text-gray-500">
+            <div className="p-12 text-center text-gray-400 font-medium">
               Carregando pacientes...
             </div>
           )}
 
           {error && (
-            <div className="p-6 text-red-500 font-medium">
+            <div className="p-12 text-center text-red-500 font-medium">
               {error}
             </div>
           )}
 
           {!loading && patients.length === 0 && (
-            <div className="p-6 text-gray-500">
-              Nenhum paciente cadastrado.
+            <div className="p-16 text-center flex flex-col items-center text-gray-400 bg-gray-50/30">
+              <span className="text-4xl mb-3">📇</span>
+              <p className="font-medium">Nenhum paciente cadastrado.</p>
             </div>
           )}
 
           {/* ================= DESKTOP ================= */}
           {!loading && patients.length > 0 && (
             <>
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto custom-scrollbar">
                 <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                  <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase text-xs tracking-wider font-semibold">
                     <tr>
-                      <th className="px-6 py-3 text-left">Nome</th>
-                      <th className="px-6 py-3 text-left">Telefone</th>
-                      <th className="px-6 py-3">Idade</th>
-                      <th className="px-6 py-3 text-left">Nascimento</th>
-                      <th className="px-6 py-3 text-left">CPF</th>
-                      <th className="px-6 py-3 text-left">Email</th>
-                      <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-4 text-left">Nome e Contato</th>
+                      <th className="px-6 py-4 text-left">Informações Pessoais</th>
+                      <th className="px-6 py-4 text-center">Status</th>
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-gray-200 text-xs">
+                  <tbody className="divide-y divide-gray-100 text-sm">
                     {[...patients]
                     .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" }))
                     .map((p) => {
@@ -187,45 +183,48 @@ export default function Patients() {
                         <tr
                           key={p.id}
                           onClick={() => handleEdit(p)}
-                          className="hover:bg-blue-50 cursor-pointer"
+                          className="hover:bg-primary/5 transition-colors cursor-pointer group"
                         >
-                          <td className="px-6 py-4 font-medium">
-                            {p.full_name}
+                          <td className="px-6 py-5">
+                            <div className="font-semibold text-gray-900 group-hover:text-primary transition-colors mb-1">
+                              {p.full_name}
+                            </div>
+                            <div className="text-xs text-gray-500 space-y-0.5">
+                              <p className="flex items-center gap-1.5">
+                                <span className="opacity-70">✉️</span> {p.email}
+                              </p>
+                              <p className="flex items-center gap-1.5">
+                                <span className="opacity-70">📞</span> {formatPhone(p.phone) || "-"}
+                              </p>
+                            </div>
                           </td>
 
-                          <td className="px-6 py-4 text-gray-600">
-                            {formatPhone(p.phone) || "-"}
+                          <td className="px-6 py-5">
+                            <div className="text-gray-600 mb-1 font-medium">
+                              {formatCPF(p.cpf)}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span>📅 {formatDateBR(p.birth_date)}</span>
+                              <span className="text-gray-300">•</span>
+                              <span className={`px-2 py-0.5 rounded-md font-medium ${
+                                age < 18
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-blue-50 text-blue-700"
+                              }`}>
+                                {age} anos
+                              </span>
+                            </div>
                           </td>
 
-                          <td className="px-6 py-4 text-center">
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              age < 18
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-blue-50 text-blue-700"
-                            }`}>
-                              {age} anos
-                            </span>
-                          </td>
-
-                          <td className="px-6 py-4 text-gray-600">
-                            {formatDateBR(p.birth_date)}
-                          </td>
-
-                          <td className="px-6 py-4 text-gray-600">
-                            {formatCPF(p.cpf)}
-                          </td>
-
-                          <td className="px-6 py-4 text-gray-600">
-                            {p.email}
-                          </td>
-
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-6 py-5 text-center">
                             {p.is_deleted ? (
-                              <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
+                              <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-200/60 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
                                 Inativo
                               </span>
                             ) : (
-                              <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full">
+                              <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-600 border border-green-200/60 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                 Ativo
                               </span>
                             )}

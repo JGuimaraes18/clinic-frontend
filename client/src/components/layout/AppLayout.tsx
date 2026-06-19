@@ -59,26 +59,29 @@ export default function AppLayout() {
       {/* SIDEBAR / DRAWER */}
       <div
         className={`
-          fixed md:relative z-50 h-full bg-white border-r border-border
-          flex flex-col transition-all duration-300
-
+          fixed md:relative z-50 h-full bg-white border-r border-gray-100
+          flex flex-col transition-all duration-300 shadow-xl shadow-gray-200/20
           ${isMobile
             ? sidebarOpen
-              ? "left-0 w-40"
-              : "-left-64 w-40"
+              ? "left-0 w-64"
+              : "-left-64 w-64"
             : sidebarCollapsed
               ? "w-20"
-              : "w-50"
+              : "w-64"
           }
         `}
       >
-
         {/* HEADER */}
-        <div className="p-2 border-b border-border flex items-center justify-between bg-primary text-white">
+        <div className="p-6 flex items-center justify-between">
           {!sidebarCollapsed && !isMobile && (
-            <h1 className="text-lg font-bold">
-              Sistema Clínica
-            </h1>
+            <div className="flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-green-600 flex items-center justify-center shadow-lg shadow-primary/30 text-white">
+                <Activity size={20} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-500 bg-clip-text text-transparent tracking-tight">
+                Clinify
+              </h1>
+            </div>
           )}
 
           <button
@@ -87,7 +90,7 @@ export default function AppLayout() {
                 ? setSidebarOpen(!sidebarOpen)
                 : setSidebarCollapsed(!sidebarCollapsed)
             }
-            className="hover:bg-white/10 p-2 rounded-lg"
+            className="hover:bg-gray-100 p-2 rounded-xl transition-colors text-gray-500 hover:text-gray-900"
           >
             {isMobile
               ? (sidebarOpen ? <X size={20} /> : <Menu size={20} />)
@@ -97,39 +100,46 @@ export default function AppLayout() {
         </div>
 
         {/* MENU */}
-        <nav className="flex-1 p-4 space-y-2">
-          {menu.map(({ path, label, icon: Icon }) => (
-            <button
-              key={path}
-              onClick={() => {
-                navigate(path);
-                if (isMobile) setSidebarOpen(false);
-              }}
-              className={`
-                w-full flex items-center gap-2 px-2 py-2 rounded-lg transition
-                ${location.pathname === path
-                  ? "bg-secondary text-primary font-semibold"
-                  : "text-foreground hover:bg-secondary"
-                }
-              `}
-            >
-              <Icon size={16} />
-              {(!sidebarCollapsed || isMobile) && (
-                <span className="text-sm">{label}</span>
-              )}
-            </button>
-          ))}
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+          {menu.map(({ path, label, icon: Icon }) => {
+            const isActive = location.pathname === path;
+            return (
+              <button
+                key={path}
+                onClick={() => {
+                  navigate(path);
+                  if (isMobile) setSidebarOpen(false);
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
+                  ${isActive
+                    ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold shadow-sm"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  }
+                `}
+              >
+                <Icon 
+                  size={20} 
+                  className={`transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`}
+                  strokeWidth={isActive ? 2.5 : 2} 
+                />
+                {(!sidebarCollapsed || isMobile) && (
+                  <span className="text-sm">{label}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         {/* LOGOUT */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-gray-100">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-red-50 rounded-lg"
+            className="w-full flex items-center gap-3 px-3 py-3 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors group"
           >
-            <LogOut size={16} />
+            <LogOut size={20} className="group-hover:scale-110 transition-transform duration-200" />
             {(!sidebarCollapsed || isMobile) && (
-              <span>Sair</span>
+              <span className="text-sm font-medium">Sair da conta</span>
             )}
           </button>
         </div>
@@ -140,21 +150,29 @@ export default function AppLayout() {
 
         {/* TOPBAR MOBILE */}
         {isMobile && (
-          // <div className="p-4 border-b flex items-center md:hidden">
-          <div className="p-2 border-b border-border flex items-center bg-primary text-white">
-
-            <button onClick={() => setSidebarOpen(true)}>
-              <Menu />
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center bg-white/80 backdrop-blur-md sticky top-0 z-30">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 -ml-2 rounded-xl text-gray-600 hover:bg-gray-100"
+            >
+              <Menu size={20} />
             </button>
-            <h1 className="ml-4 text-base sm:text-lg font-semibold">
-              Sistema Clínica
-            </h1>
+            <div className="flex items-center gap-2 ml-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-green-600 flex items-center justify-center shadow-md text-white">
+                <Activity size={16} strokeWidth={2.5} />
+              </div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-gray-800 to-gray-500 bg-clip-text text-transparent">
+                Clinify
+              </h1>
+            </div>
           </div>
         )}
 
         {/* MAIN */}
-        <main className="flex-1 overflow-auto p-6 md:p-8">
-          <Outlet />
+        <main className="flex-1 overflow-auto p-4 md:p-8 bg-gray-50/50">
+          <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
