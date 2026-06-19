@@ -3,12 +3,12 @@ import { User, UserForm } from "@/types/users";
 
 export async function login(
   clinic_slug: string,
-  username: string,
+  email: string,
   password: string
 ) {
   const response = await api.post("/api/auth/login/", {
     clinic_slug,
-    username,
+    email,
     password,
   });
 
@@ -18,7 +18,7 @@ export async function login(
   return response.data;
 }
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<User> {
   const response = await api.get("/api/auth/me/");
   return response.data;
 }
@@ -33,7 +33,10 @@ export async function createUser(payload: UserForm): Promise<User> {
   return data;
 }
 
-export async function updateUser(id: number, payload: Partial<UserForm>): Promise<User> {
+export async function updateUser(
+  id: number,
+  payload: Partial<UserForm>
+): Promise<User> {
   const { data } = await api.patch(`/api/auth/users/${id}/`, payload);
   return data;
 }

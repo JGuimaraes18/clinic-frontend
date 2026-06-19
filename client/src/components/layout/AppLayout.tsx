@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isProfessional } = useAuth();
 
   // detecta mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -22,7 +22,9 @@ export default function AppLayout() {
     { path: "/agendamentos", label: "Agendamentos", icon: Calendar },
     { path: "/calendar", label: "Calendário", icon: Calendar },
     { path: "/pacientes", label: "Pacientes", icon: Users },
-    { path: "/profissionais", label: "Profissionais", icon: Stethoscope },
+    ...(!isProfessional
+      ? [{ path: "/profissionais", label: "Profissionais", icon: Stethoscope }]
+      : []),
     ...(user?.is_superuser
       ? [{ path: "/usuarios", label: "Usuários", icon: Users }]
       : []),

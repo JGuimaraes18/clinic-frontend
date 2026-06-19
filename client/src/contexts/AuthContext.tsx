@@ -1,35 +1,72 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser, login as loginService } from "@/services/authService";
-import { User } from "@/types/users";
+import { User, UserRole } from "@/types/users";
+
+// Decodifica o payload do JWT sem dependência externa
+function decodeToken(token: string): Record<string, any> | null {
+  try {
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
 
 type AuthContextType = {
   user: User | null;
+  role: UserRole | null;
+  clinicId: number | null;
   loading: boolean;
-  login: (clinic: string, username: string, password: string) => Promise<void>;
+  login: (clinic: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  isAdmin: boolean;
+  isProfessional: boolean;
+  isAttendant: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  role: null,
+  clinicId: null,
   loading: true,
   login: async () => {},
   logout: () => {},
+  isAdmin: false,
+  isProfessional: false,
+  isAttendant: false,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [clinicId, setClinicId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // =============================
+  // EXTRAIR ROLE E CLINIC DO TOKEN
+  // =============================
+  function loadTokenData() {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    const payload = decodeToken(token);
+    if (!payload) return;
+
+    setRole(payload.role ?? null);
+    setClinicId(payload.clinic_id ?? null);
+  }
 
   // =============================
   // LOGIN
   // =============================
   const login = async (
-    clinic: string,
-    username: string,
+    clinic_slug: string,
+    email: string,
     password: string
   ) => {
     try {
-      await loginService(clinic, username, password);
+      await loginService(clinic_slug, email, password);
+      loadTokenData();
 
       const data = await getCurrentUser();
       setUser(data);
@@ -44,22 +81,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // =============================
   const logout = () => {
     setUser(null);
+    setRole(null);
+    setClinicId(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
   };
 
   // =============================
-  // AUTO LOAD USER (refresh page)
+  // AUTO LOAD (refresh de página)
   // =============================
   useEffect(() => {
     async function load() {
       const token = localStorage.getItem("access_token");
 
       if (!token) {
-        setUser(null);
         setLoading(false);
         return;
       }
+
+      loadTokenData();
 
       try {
         const data = await getCurrentUser();
@@ -75,7 +115,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        clinicId,
+        loading,
+        login,
+        logout,
+        isAdmin: role === "ADMIN" || user?.is_superuser === true,
+        isProfessional: role === "PROFESSIONAL",
+        isAttendant: role === "ATTENDANT",
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

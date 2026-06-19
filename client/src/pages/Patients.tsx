@@ -4,9 +4,11 @@ import { getPatients, createPatient, updatePatient } from "@/services/patientSer
 import { useFetch } from "@/hooks/useFetch";
 import { formatCPF, formatPhone, formatDateBR, calculateAge } from "@/utils/format";
 import { Patient, PatientForm } from "@/types/patient";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Patients() {
   const { data, loading, error } = useFetch<Patient[]>(getPatients);
+  const { isProfessional } = useAuth();
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -127,12 +129,14 @@ export default function Patients() {
             </p>
           </div>
 
-          <button
-            className="bg-blue-600 text-white px-4 py-1 rounded-lg"
-            onClick={() => setIsOpen(true)}
-          >
-            + Novo
-          </button>
+          {!isProfessional && (
+            <button
+              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+              onClick={() => setIsOpen(true)}
+            >
+              + Novo
+            </button>
+          )}
         </div>
 
         {/* CONTAINER */}

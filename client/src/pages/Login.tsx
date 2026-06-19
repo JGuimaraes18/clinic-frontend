@@ -1,29 +1,32 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Lock, User, Hospital } from "lucide-react";
+import { Activity, Lock, Mail, Hospital } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [clinic, setClinic] = useState("");
-  const [username, setUsername] = useState("");
+  const [clinicSlug, setClinicSlug] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      await login(clinic, username, password);
-
+      await login(clinicSlug, email, password);
       navigate("/", { replace: true });
-
-    } catch (error: any) {
-      console.log(error?.response?.data);
-      alert("Usuário ou senha inválidos");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.non_field_errors?.[0] ||
+        err?.response?.data?.detail ||
+        "Usuário, senha ou clínica inválidos.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -32,7 +35,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5 p-6">
       <div className="w-full max-w-md bg-white border border-border rounded-2xl shadow-lg p-8 space-y-8">
-        
+
         {/* Logo */}
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
@@ -58,32 +61,39 @@ export default function Login() {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
+                id="clinic-slug"
                 type="text"
-                value={clinic}
-                onChange={(e) => setClinic(e.target.value)}
+                value={clinicSlug}
+                onChange={(e) => setClinicSlug(e.target.value)}
                 className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                placeholder="Nome da clínica"
+                placeholder="slug-da-clinica"
+                autoComplete="organization"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Informe o identificador único da sua clínica
+            </p>
           </div>
 
-          {/* Usuário */}
+          {/* Email */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">
-              Usuário
+              E-mail
             </label>
             <div className="relative">
-              <User
+              <Mail
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
-                type="text"
+                id="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                placeholder="Nome de usuário"
+                placeholder="seu@email.com"
+                autoComplete="email"
               />
             </div>
           </div>
@@ -99,18 +109,28 @@ export default function Login() {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
+                id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                 placeholder="••••••••"
+                autoComplete="current-password"
               />
             </div>
           </div>
 
+          {/* Erro */}
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              {error}
+            </div>
+          )}
+
           {/* Botão */}
           <button
+            id="login-submit"
             type="submit"
             disabled={loading}
             className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition disabled:opacity-50"

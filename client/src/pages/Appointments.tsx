@@ -75,7 +75,7 @@ export default function Appointments() {
   const navigate = useNavigate();
 
   // AUTH GLOBAL CORRETO
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isProfessional } = useAuth();
 
   const [form, setForm] = useState<AppointmentForm>({
     data_hora: "",
@@ -145,7 +145,7 @@ export default function Appointments() {
 
     if (currentUser.is_superuser) return true;
 
-    if (isAdminOfClinic) return true;
+    if (isAdminOfClinic || isProfessional) return true;
 
     return false;
   }
@@ -309,12 +309,14 @@ export default function Appointments() {
             </p>
           </div>
 
-          <button
-            onClick={openNewModal}
-            className="bg-blue-600 text-white px-4 py-1 rounded-lg"
-          >
-            + Novo
-          </button>
+          {!isProfessional && (
+            <button
+              onClick={openNewModal}
+              className="bg-blue-600 text-white px-4 py-1 rounded-lg"
+            >
+              + Novo
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -414,7 +416,7 @@ export default function Appointments() {
 
               {a.status === "AGENDADO" && (
                 <div className="mt-4 flex gap-2">
-                  {canStart(a) && (
+                  {canStart() && (
                     <button
                       onClick={() => handleStart(a.id)}
                       className="bg-green-600 text-white px-2 py-1 rounded-lg text-xs"
@@ -423,25 +425,29 @@ export default function Appointments() {
                     </button>
                   )}
 
-                  <button
-                    onClick={() => openEditModal(a)}
-                    className="bg-gray-500 text-white px-2 py-1 rounded-lg text-xs"
-                  >
-                    Editar
-                  </button>
+                  {!isProfessional && (
+                    <>
+                      <button
+                        onClick={() => openEditModal(a)}
+                        className="bg-gray-500 text-white px-2 py-1 rounded-lg text-xs"
+                      >
+                        Editar
+                      </button>
 
-                  <button
-                    onClick={() => handleCancel(a.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs"
-                  >
-                    Cancelar
-                  </button>
+                      <button
+                        onClick={() => handleCancel(a.id)}
+                        className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 
               {a.status === "EM_ATENDIMENTO" && (
                 <div className="mt-4 flex gap-2">
-                  {canStart(a) && (
+                  {canStart() && (
                     <button
                       onClick={() => handleAttendance(a.id)}
                       className="bg-green-600 text-white px-3 py-1 rounded text-sm"
