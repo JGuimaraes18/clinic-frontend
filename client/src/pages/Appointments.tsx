@@ -447,8 +447,6 @@ export default function Appointments() {
                       </button>
                     )}
 
-                    {!isProfessional && (
-                      <>
                         <button
                           onClick={() => openEditModal(a)}
                           className="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
@@ -462,8 +460,6 @@ export default function Appointments() {
                         >
                           Cancelar
                         </button>
-                      </>
-                    )}
                   </div>
                 )}
 
@@ -556,6 +552,7 @@ export default function Appointments() {
 
           <select
             value={form.profissional}
+            disabled={isProfessional}
             onChange={(e) =>
               setForm({
                 ...form,
@@ -564,7 +561,7 @@ export default function Appointments() {
             }
             className={`w-full rounded p-2 border ${
               submitted && !form.profissional ? "border-red-500" : "border-gray-300"
-            }`}
+            } ${isProfessional ? "bg-gray-100 cursor-not-allowed" : ""}`}
           >
             <option value="">Selecione o profissional</option>
             {professionals.map((p: any) => (

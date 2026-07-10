@@ -1,12 +1,69 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Activity, Calendar, Users, Stethoscope, Menu, X, LogOut, } from "lucide-react";
+import { Activity, Calendar, Users, Stethoscope, Menu, X, LogOut, Settings, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+import { getClinic } from "@/services/clinicService";
+import { Clinic } from "@/types/clinic";
 
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isProfessional } = useAuth();
+  const { user, logout, isProfessional, isSuperadmin, clinicId } = useAuth();
+  
+  const [clinicConfig, setClinicConfig] = useState<Clinic | null>(null);
+
+  useEffect(() => {
+    if (user?.settings) {
+      const { theme, primary_color, density, font_size } = user.settings;
+      
+      // Theme Accent Color
+      if (primary_color) {
+        document.documentElement.style.setProperty('--primary', primary_color);
+      }
+      
+      // Theme Dark Mode
+      if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Density
+      document.documentElement.classList.remove('density-compact', 'density-comfortable');
+      if (density) {
+        document.documentElement.classList.add(`density-${density}`);
+      } else {
+        document.documentElement.classList.add('density-comfortable');
+      }
+      
+      // Font Size
+      document.documentElement.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+      if (font_size) {
+        document.documentElement.classList.add(`font-size-${font_size}`);
+      } else {
+        document.documentElement.classList.add('font-size-medium');
+      }
+    } else if (clinicId) {
+      getClinic(clinicId).then(config => {
+        setClinicConfig(config);
+        
+        // Apply theme colors globally as fallback
+        if (config.primary_color) {
+          document.documentElement.style.setProperty('--primary', config.primary_color);
+        }
+        if (config.secondary_color) {
+          document.documentElement.style.setProperty('--secondary', config.secondary_color);
+        }
+      }).catch(console.error);
+    }
+  }, [clinicId, user?.settings]);
+
+  useEffect(() => {
+    if (user?.force_password_change && location.pathname !== "/force-password-change") {
+      navigate("/force-password-change", { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
 
   // detecta mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -17,7 +74,7 @@ export default function AppLayout() {
   // colapso desktop
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const menu = [
+  const clinicalMenu = [
     { path: "/", label: "Dashboard", icon: Activity },
     { path: "/agendamentos", label: "Agendamentos", icon: Calendar },
     { path: "/calendar", label: "Calendário", icon: Calendar },
@@ -25,13 +82,18 @@ export default function AppLayout() {
     ...(!isProfessional
       ? [{ path: "/profissionais", label: "Profissionais", icon: Stethoscope }]
       : []),
-    ...(user?.is_superuser
-      ? [{ path: "/usuarios", label: "Usuários", icon: Users }]
-      : []),
-    ...(user?.is_superuser
-      ? [{ path: "/clinicas", label: "Clínicas", icon: Stethoscope }]
-      : []),
+    { path: "/settings", label: "Configurações", icon: Settings },
   ];
+
+  const platformMenu = [
+    { path: "/", label: "Dashboard da Plataforma", icon: Activity },
+    { path: "/clinicas", label: "Clínicas", icon: Stethoscope },
+    { path: "/usuarios", label: "Administradores", icon: Users },
+    { path: "/audit-logs", label: "Logs de Auditoria", icon: FileText },
+    { path: "/settings", label: "Configurações", icon: Settings },
+  ];
+
+  const menu = isSuperadmin ? platformMenu : clinicalMenu;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -75,11 +137,15 @@ export default function AppLayout() {
         <div className="p-6 flex items-center justify-between">
           {!sidebarCollapsed && !isMobile && (
             <div className="flex items-center gap-3 animate-in fade-in zoom-in duration-300">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-green-600 flex items-center justify-center shadow-lg shadow-primary/30 text-white">
-                <Activity size={20} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-500 bg-clip-text text-transparent tracking-tight">
-                Clinify
+              {clinicConfig?.logo ? (
+                <img src={clinicConfig.logo} alt="Logo" className="w-10 h-10 object-contain rounded-xl" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-green-600 flex items-center justify-center shadow-lg shadow-primary/30 text-white">
+                  <Activity size={20} strokeWidth={2.5} />
+                </div>
+              )}
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-500 bg-clip-text text-transparent tracking-tight truncate max-w-[150px]">
+                {clinicConfig?.name || "Clinify"}
               </h1>
             </div>
           )}

@@ -44,3 +44,10 @@ export async function updateUser(
 export async function deleteUser(id: number): Promise<void> {
   await api.delete(`/api/auth/users/${id}/`);
 }
+
+import { UserSettings } from "@/types/users";
+
+export async function updateUserSettings(settings: Partial<UserSettings>): Promise<any> {
+  const { data } = await api.post("/api/auth/me/settings/", settings);
+  return data;
+}

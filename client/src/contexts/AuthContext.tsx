@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser, login as loginService } from "@/services/authService";
-import { User, UserRole } from "@/types/users";
+import { getCurrentUser, login as loginService, updateUserSettings } from "@/services/authService";
+import { User, UserRole, UserSettings } from "@/types/users";
 
 // Decodifica o payload do JWT sem dependência externa
 function decodeToken(token: string): Record<string, any> | null {
@@ -22,6 +22,8 @@ type AuthContextType = {
   isAdmin: boolean;
   isProfessional: boolean;
   isAttendant: boolean;
+  isSuperadmin: boolean;
+  updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,6 +36,8 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isProfessional: false,
   isAttendant: false,
+  isSuperadmin: false,
+  updateSettings: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -114,6 +118,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     load();
   }, []);
 
+  const updateSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user) return;
+    await updateUserSettings(newSettings);
+    setUser(prev => prev ? {
+      ...prev,
+      settings: {
+        ...prev.settings,
+        ...newSettings
+      } as UserSettings
+    } : null);
+  };
+
+
   return (
     <AuthContext.Provider
       value={{
@@ -123,9 +140,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         logout,
-        isAdmin: role === "ADMIN" || user?.is_superuser === true,
+        isAdmin: role === "ADMIN",
         isProfessional: role === "PROFESSIONAL",
         isAttendant: role === "ATTENDANT",
+        isSuperadmin: role === "SUPERUSER" || user?.is_superuser === true,
+        updateSettings,
       }}
     >
       {children}

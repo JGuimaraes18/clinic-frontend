@@ -7,6 +7,15 @@ export interface Clinic extends BaseModel {
   document: string;
   phone: string;
   email: string;
+  is_active?: boolean;
+  admin_email?: string;
+  user_count?: number;
+  created_at?: string;
+  logo?: string | null;
+  banner?: string | null;
+  theme?: string;
+  primary_color?: string;
+  secondary_color?: string;
 }
 
 export interface ClinicForm {
@@ -15,4 +24,9 @@ export interface ClinicForm {
   document: string;
   phone: string;
   email: string;
+  logo?: string | File | null;
+  banner?: string | File | null;
+  theme?: string;
+  primary_color?: string;
+  secondary_color?: string;
 }

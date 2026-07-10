@@ -32,7 +32,7 @@ export async function createClinic(
 // ==============================
 export async function updateClinic(
   id: number,
-  data: Partial<ClinicForm>
+  data: Partial<ClinicForm & { is_active: boolean }>
 ): Promise<Clinic> {
   const response = await api.patch(`/api/clinics/${id}/`, data);
   return response.data;
@@ -43,4 +43,25 @@ export async function updateClinic(
 // ==============================
 export async function deleteClinic(id: number): Promise<void> {
   await api.delete(`/api/clinics/${id}/`);
+}
+
+// ==============================
+// TOGGLE ACTIVE
+// ==============================
+export async function toggleClinicActive(
+  id: number,
+  is_active: boolean
+): Promise<Clinic> {
+  const response = await api.patch(`/api/clinics/${id}/`, { is_active });
+  return response.data;
+}
+
+// ==============================
+// RESET ADMIN PASSWORD
+// ==============================
+export async function resetClinicAdminPassword(
+  id: number
+): Promise<{ detail: string; temporary_password: string; admin_email: string }> {
+  const response = await api.post(`/api/clinics/${id}/reset-admin-password/`);
+  return response.data;
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Activity, Lock, Mail, Hospital } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -137,6 +137,12 @@ export default function Login() {
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
+          
+          <div className="text-center pt-2">
+            <Link to="/forgot-password" className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+              Esqueceu sua senha?
+            </Link>
+          </div>
         </form>
 
         {/* Footer */}
