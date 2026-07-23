@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { KeyRound, CheckCircle2 } from "lucide-react";
-import api from "@/lib/axios";
+import api from "@/services/api";
 import { toast } from "sonner";
 
 export default function ForcePasswordChange() {
@@ -28,7 +28,7 @@ export default function ForcePasswordChange() {
 
     setLoading(true);
     try {
-      await api.post("/accounts/change-password/", { new_password: password });
+      await api.post("/api/auth/change-password/", { new_password: password });
       toast.success("Senha alterada com sucesso!");
       // Força um reload para o AuthContext recarregar o usuário sem o flag
       window.location.href = "/";

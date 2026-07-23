@@ -83,7 +83,14 @@ export default function Clinics() {
         });
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.detail || "Erro ao salvar.");
+      const data = err?.response?.data;
+      if (data && typeof data === 'object' && !data.detail) {
+        const firstKey = Object.keys(data)[0];
+        const errorMsg = Array.isArray(data[firstKey]) ? data[firstKey][0] : data[firstKey];
+        toast.error(`Erro no campo ${firstKey}: ${errorMsg}`);
+      } else {
+        toast.error(data?.detail || "Erro ao salvar.");
+      }
     }
   }
 

@@ -25,6 +25,11 @@ export default function PrivateRoute({ allowedRoles }: PrivateRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 🔒 Redirecionar para alteração de senha obrigatória
+  if (user.force_password_change && location.pathname !== "/force-password-change") {
+    return <Navigate to="/force-password-change" replace />;
+  }
+
   // 🔐 Restrição por role (opcional)
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;

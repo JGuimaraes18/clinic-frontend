@@ -15,6 +15,7 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Settings from "@/pages/Settings";
 import AuditLogs from "@/pages/AuditLogs";
+import ForcePasswordChange from "@/pages/ForcePasswordChange";
 
 
 export default function AppRoutes() {
@@ -25,6 +26,7 @@ export default function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<PrivateRoute />}>
+        <Route path="/force-password-change" element={<ForcePasswordChange />} />
         <Route element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path="agendamentos" element={<Appointments />} />
